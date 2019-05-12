@@ -15,7 +15,7 @@ Can be represented by the file sequence:
 This makes browsing much easier when you have hundreds or thousands of
 files.
 
-FSeq compiles on Linux, OS X, and Windows. A CMakeLists.txt is provided,
+FSeq compiles on Linux, OS X, and Windows. A CMakeLists.txt is provided
 but the library can be trivially included in other build systems since it
 consists of a single .h and .c file.
 
