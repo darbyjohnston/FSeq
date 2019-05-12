@@ -17,12 +17,12 @@ files in a directory.
 
 FSeq compiles on Linux, OS X, and Windows. A CMakeLists.txt is provided
 but the library can be trivially included in other build systems since it
-consists of a single .h and .c file.
+consists of a single .h and .c file (fseq.h and fseq.c).
 
 FSeq is open source software distributed under a BSD style license. See
 the file LICENSE.txt for details.
 
-Example splitting a file name into components:
+Example of how to split a file name into it's components:
     
 	#include <fseq/fseq.h>
     ...
@@ -36,7 +36,7 @@ Output:
 
     /tmp/, render, 0100, .exr
 
-Example listing the contents of a directory:
+Example of how to list the contents of a directory:
 
     #include <fseq/fseq.h>
     ...
