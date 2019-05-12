@@ -1,19 +1,19 @@
 FSeq
 ====
-FSeq is a C library for working with numbered sequences of files. File
-sequences are commonly used in the VFX and film industry to represent
-individual frames of an animation or film clip. For example the files:
+FSeq is a C library for working with sequences of files. File sequences are
+commonly used in the VFX and film industry to represent individual frames of an
+animation or film clip. For example the files:
 * render.0001.exr
 * render.0002.exr
 * render.0003.exr
 * render.0004.exr
 * render.0005.exr
 
-Can be represented by the file sequence:
+Can be represented by the file sequence shorthand:
 * render.0001-0005.exr
 
 This makes browsing much easier when you have hundreds or thousands of
-files.
+files in a directory.
 
 FSeq compiles on Linux, OS X, and Windows. A CMakeLists.txt is provided
 but the library can be trivially included in other build systems since it
