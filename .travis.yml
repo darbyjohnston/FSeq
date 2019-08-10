@@ -1,0 +1,20 @@
+language: cpp
+dist: bionic
+os:
+- linux
+branches:
+  only:
+  - master
+addons:
+  sonarcloud:
+    organization: "darbyjohnston"
+    token:
+      secure: kvLflgKpcGHfVDFTBPQaH9xU9YmeLhRcuUbT7fpqhn/4HkpsMafTJmMNPnb2MD3PKbCMCsxpcjSqL9kRzCrIlissEjMMK0HE2V0LMxJZ3LOfGQmRcIRqACGzPJ+AxKJHitetL0Sl+8iZeE2RLcYU7XaD2r5PFdlTy0AKXo7KzEd/8z3QBZpoAFLBPQ7BFN3d16tL7yMZcieDLUNCHPM98l3vfGKyCzTOrLx88MNKMAGk2chstyOo+6ZxtlT6p50BNG7ppCv587uO/D9JReNasGU4DkB/roxvdfHfKlqL5V2DS2kcELnDrULFDCXi0etagDK9sCJ62s29C9oWX8yYVb/ufX6gi1uK3jgQJiVxJN/INZTPLkyEuKSZ4b0Xa4nIMEDehN9Q/os5pdOGO56bjOsb3ttns/u8e4C66Nyt907gnaGyIzXsyCXEGJJ6bJ/WiIGTcgpGV2aFdFBFirMPlOxn1uu2L8iAQufUoW3BA4cg3tDZ3kf2SJXMy041MBLcq2JJS7amMisIv6BCzTA6fIRfOrU+WBiLM/ABPtORz03+HMfpWBmn0SxejrE2KexsqxsFcsblnBsT++YyOqlui34Gx7R0H8CzxiOg/BPpjCHNM4PaLLMJpp3Y7fsRcSsgBvraY5luske92MEYCJFG1QbA4u3QkctKv5srLmDxalE=
+before_script:
+- mkdir build
+- cd build
+- build-wrapper-linux-x86-64 --out-dir ../bw-output cmake .. -DFSEQ_BUILD_TESTS=TRUE && make && make test
+- cd ..
+script:
+- sonar-scanner
+
