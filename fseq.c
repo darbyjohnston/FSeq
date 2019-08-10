@@ -35,8 +35,12 @@
 #include <string.h>
 
 #if defined(WIN32) || defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif // WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif // NOMINMAX
 #include <windows.h>
 #else
 #include <sys/types.h>
@@ -69,7 +73,8 @@ void fseqFileNameSizesInit(struct FSeqFileNameSizes* value)
      '9' == V || \
      '#' == V)
 #define _IS_NUMBER_SEPARATOR(V) \
-	('-' == V)
+	('-' == V) || \
+	(',' == V)
 
 unsigned short fseqFileNameParseSizes(
     const char*               in,
@@ -432,7 +437,6 @@ struct FSeqDirEntry* fseqDirList(const char* path, const struct FSeqDirOptions* 
 {
     struct FSeqDirEntry*  out        = NULL;
     struct FSeqDirEntry*  entry      = NULL;
-    const size_t          len        = strlen(path);
     struct _DirEntry*     _entries   = NULL;
     struct _DirEntry*     _entry     = NULL;
     struct _DirEntry*     _lastEntry = NULL;
@@ -447,6 +451,7 @@ struct FSeqDirEntry* fseqDirList(const char* path, const struct FSeqDirOptions* 
 #if defined(WIN32)
 
     static char glob[FSEQ_STRING_LEN];
+    const size_t len = strlen(path);
     memcpy(glob, path, len);
     glob[len] = '\\';
     glob[len + 1] = '*';
@@ -641,8 +646,6 @@ struct FSeqDirEntry* fseqDirList(const char* path, const struct FSeqDirOptions* 
     _entry = _entries;
     while (_entry)
     {
-        struct _DirEntry* tmp = _entry;
-        
         if (!out)
         {
             out = (struct FSeqDirEntry*)malloc(sizeof(struct FSeqDirEntry));
