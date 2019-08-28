@@ -1,0 +1,15 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Run CMake
+      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Debug -DFSEQ_BUILD_BIN=TRUE -DFSEQ_BUILD_TESTS=TRUE
+    - name: Run make
+      run: cd build && make
+    - name: Run tests
+      run: cd build && make test
