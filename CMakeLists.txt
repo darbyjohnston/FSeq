@@ -27,3 +27,9 @@ if(FSEQ_BUILD_TESTS)
     target_link_libraries(fseqTest fseq)
     add_test(fseqTest ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/fseqTest${CMAKE_EXECUTABLE_SUFFIX})
 endif()
+
+install(
+    TARGETS fseq
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)
