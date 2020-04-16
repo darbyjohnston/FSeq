@@ -33,3 +33,5 @@ install(
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib)
+
+install(FILES fseq.h DESTINATION include)
