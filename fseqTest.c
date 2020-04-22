@@ -128,7 +128,8 @@ int main(int argc, char** argv)
         fseqDirEntryInit(&entry);
         char buf[FSEQ_STRING_LEN];
         fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
-        assert(!strlen(buf));
+        assert(0 == strlen(buf));
+        fseqDirEntryDel(&entry);
     }
     {
         struct FSeqDirEntry entry;
@@ -138,6 +139,10 @@ int main(int argc, char** argv)
         fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
         printf("%s\n", buf);
         assert(0 == strcmp(buf, "render.exr"));
+        fseqDirEntryToString(&entry, buf, FSEQ_TRUE, FSEQ_STRING_LEN);
+        printf("%s\n", buf);
+        assert(0 == strcmp(buf, "/tmp/render.exr"));
+        fseqDirEntryDel(&entry);
     }
     {
         struct FSeqDirEntry entry;
@@ -151,6 +156,10 @@ int main(int argc, char** argv)
         fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
         printf("%s\n", buf);
         assert(0 == strcmp(buf, "render.01000-10000.exr"));
+        fseqDirEntryToString(&entry, buf, FSEQ_TRUE, FSEQ_STRING_LEN);
+        printf("%s\n", buf);
+        assert(0 == strcmp(buf, "/tmp/render.01000-10000.exr"));
+        fseqDirEntryDel(&entry);
     }
     return 0;
 }
