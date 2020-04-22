@@ -2,6 +2,10 @@ language: cpp
 dist: bionic
 os:
 - linux
+sudo: require
+install:
+- sudo apt-get update
+- sudo apt-get install lcov
 branches:
   only:
   - master
@@ -13,8 +17,9 @@ addons:
 before_script:
 - mkdir build
 - cd build
-- cmake .. -DFSEQ_BUILD_TESTS=TRUE
+- cmake .. -DFSEQ_BUILD_TESTS=TRUE -DFSEQ_GCOV=TRUE
 - build-wrapper-linux-x86-64 --out-dir ../bw-output cmake --build . && make test
+- sh ../gcov.sh ..
 - cd ..
 script:
 - sonar-scanner

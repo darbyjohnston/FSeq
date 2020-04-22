@@ -10,6 +10,18 @@ project(
 
 set(FSEQ_BUILD_BIN FALSE CACHE STRING "Whether to build the utilities")
 set(FSEQ_BUILD_TESTS FALSE CACHE STRING "Whether to build the tests")
+set(FSEQ_GCOV FALSE CACHE BOOL "Enable gcov code coverage")
+
+if(UNIX)
+    if(CMAKE_COMPILER_IS_GNUCXX)
+        if(FSEQ_GCOV)
+            include(CodeCoverage)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+            set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+        endif()
+    endif()
+endif()
 
 include_directories(${CMAKE_SOURCE_DIR})
 
