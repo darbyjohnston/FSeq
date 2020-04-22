@@ -18,7 +18,7 @@ before_script:
 - mkdir build
 - cd build
 - cmake .. -DFSEQ_BUILD_TESTS=TRUE -DFSEQ_GCOV=TRUE
-- build-wrapper-linux-x86-64 --out-dir ../bw-output cmake --build . -v && make test
+- build-wrapper-linux-x86-64 --out-dir ../bw-output cmake --build . && make test
 - sh ../gcov.sh ..
 - cd ..
 script:
