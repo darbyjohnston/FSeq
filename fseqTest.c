@@ -135,31 +135,40 @@ int main(int argc, char** argv)
         struct FSeqDirEntry entry;
         fseqDirEntryInit(&entry);
         fseqFileNameSplit("/tmp/render.exr", &entry.fileName, FSEQ_STRING_LEN);
+        
         char buf[FSEQ_STRING_LEN];
         fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
-        printf("%s\n", buf);
         assert(0 == strcmp(buf, "render.exr"));
         fseqDirEntryToString(&entry, buf, FSEQ_TRUE, FSEQ_STRING_LEN);
-        printf("%s\n", buf);
         assert(0 == strcmp(buf, "/tmp/render.exr"));
+
         fseqDirEntryDel(&entry);
     }
     {
         struct FSeqDirEntry entry;
         fseqDirEntryInit(&entry);
         fseqFileNameSplit("/tmp/render.1.exr", &entry.fileName, FSEQ_STRING_LEN);
-        entry.frameMin = 1000;
-        entry.frameMax = 10000;
-        entry.hasFramePadding = FSEQ_TRUE;
-        entry.framePadding = 5;
+
         char buf[FSEQ_STRING_LEN];
         fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
-        printf("%s\n", buf);
-        assert(0 == strcmp(buf, "render.01000-10000.exr"));
+        assert(0 == strcmp(buf, "render.0.exr"));
         fseqDirEntryToString(&entry, buf, FSEQ_TRUE, FSEQ_STRING_LEN);
-        printf("%s\n", buf);
-        assert(0 == strcmp(buf, "/tmp/render.01000-10000.exr"));
+        assert(0 == strcmp(buf, "/tmp/render.0.exr"));
+
+        entry.frameMin = 1000;
+        entry.frameMax = 10000;
+        fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
+        assert(0 == strcmp(buf, "render.1000-10000.exr"));
+        fseqDirEntryToString(&entry, buf, FSEQ_TRUE, FSEQ_STRING_LEN);
+        assert(0 == strcmp(buf, "/tmp/render.1000-10000.exr"));
+
+        entry.hasFramePadding = FSEQ_TRUE;
+        entry.framePadding = 5;
+        fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
+        assert(0 == strcmp(buf, "render.01000-10000.exr"));
+
         fseqDirEntryDel(&entry);
     }
     return 0;
 }
+
