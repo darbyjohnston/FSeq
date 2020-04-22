@@ -8,11 +8,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+static void touch(const char* fileName)
+{
+    fclose(fopen(fileName, "w"));
+}
 
 int main(int argc, char** argv)
 {
     {
         struct FSeqFileNameSizes a;
+        
         fseqFileNameSizesInit(&a);
         assert(0 == a.path);
         assert(0 == a.base);
@@ -40,6 +48,7 @@ int main(int argc, char** argv)
             { "C:\\a\\b\\c-0100.ext", "C:\\a\\b\\", "c-", "0100", ".ext" }
         };
         static const size_t testDataSize = sizeof(testData) / sizeof(testData[0]);
+        
         for (size_t i = 0; i < testDataSize; ++i)
         {
             struct FSeqFileNameSizes sizes;
@@ -69,6 +78,7 @@ int main(int argc, char** argv)
     {
         struct FSeqFileNameSizes a;
         struct FSeqFileNameSizes b;
+        
         fseqFileNameSizesInit(&a);
         fseqFileNameSizesInit(&b);
         assert(fseqFileNameSizesCompare(&a, &b) != 0);
@@ -77,6 +87,7 @@ int main(int argc, char** argv)
     }
     {
         struct FSeqFileName a;
+        
         fseqFileNameInit(&a);
         assert(NULL == a.path);
         assert(NULL == a.base);
@@ -85,10 +96,11 @@ int main(int argc, char** argv)
     }
     {
         struct FSeqFileName a;
+        
         fseqFileNameInit(&a);
-        fseqFileNameSplit("/tmp/render.1.tif", &a, FSEQ_STRING_LEN);
+        fseqFileNameSplit("/tmp/seq.1.tif", &a, FSEQ_STRING_LEN);
         assert(0 == memcmp("/tmp/", a.path, strlen(a.path)));
-        assert(0 == memcmp("render.", a.base, strlen(a.base)));
+        assert(0 == memcmp("seq.", a.base, strlen(a.base)));
         assert(0 == memcmp("1", a.number, strlen(a.number)));
         assert(0 == memcmp(".tif", a.extension, strlen(a.extension)));
         fseqFileNameDel(&a);
@@ -98,25 +110,23 @@ int main(int argc, char** argv)
         assert(NULL == a.extension);
     }
     {
-        char fileNameA[] = "/tmp/render.1.tif";
-        char fileNameB[] = "/tmp/render.2.tif";
+        char fileNameA[] = "/tmp/seq.1.tif";
+        char fileNameB[] = "/tmp/seq.2.tif";
         struct FSeqFileNameSizes sizesA;
         struct FSeqFileNameSizes sizesB;
         int match = 0;
         
         fseqFileNameSizesInit(&sizesA);
         fseqFileNameParseSizes(fileNameA, &sizesA, FSEQ_STRING_LEN);
-        printf("%s: %d %d %d %d\n", fileNameA, sizesA.path, sizesA.base, sizesA.number, sizesA.extension);
         assert(5 == sizesA.path);
-        assert(7 == sizesA.base);
+        assert(4 == sizesA.base);
         assert(1 == sizesA.number);
         assert(4 == sizesA.extension);
         
         fseqFileNameSizesInit(&sizesB);
         fseqFileNameParseSizes(fileNameB, &sizesB, FSEQ_STRING_LEN);
-        printf("%s: %d %d %d %d\n", fileNameB, sizesB.path, sizesB.base, sizesB.number, sizesB.extension);
         assert(5 == sizesB.path);
-        assert(7 == sizesB.base);
+        assert(4 == sizesB.base);
         assert(1 == sizesB.number);
         assert(4 == sizesB.extension);
         
@@ -125,49 +135,90 @@ int main(int argc, char** argv)
     }
     {
         struct FSeqDirEntry entry;
-        fseqDirEntryInit(&entry);
         char buf[FSEQ_STRING_LEN];
+        
+        fseqDirEntryInit(&entry);
         fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
         assert(0 == strlen(buf));
         fseqDirEntryDel(&entry);
     }
     {
         struct FSeqDirEntry entry;
-        fseqDirEntryInit(&entry);
-        fseqFileNameSplit("/tmp/render.exr", &entry.fileName, FSEQ_STRING_LEN);
-        
         char buf[FSEQ_STRING_LEN];
+
+        fseqDirEntryInit(&entry);
+        fseqFileNameSplit("/tmp/seq.exr", &entry.fileName, FSEQ_STRING_LEN);
+        
         fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
-        assert(0 == strcmp(buf, "render.exr"));
+        assert(0 == strcmp(buf, "seq.exr"));
         fseqDirEntryToString(&entry, buf, FSEQ_TRUE, FSEQ_STRING_LEN);
-        assert(0 == strcmp(buf, "/tmp/render.exr"));
+        assert(0 == strcmp(buf, "/tmp/seq.exr"));
 
         fseqDirEntryDel(&entry);
     }
     {
         struct FSeqDirEntry entry;
-        fseqDirEntryInit(&entry);
-        fseqFileNameSplit("/tmp/render.1.exr", &entry.fileName, FSEQ_STRING_LEN);
-
         char buf[FSEQ_STRING_LEN];
+
+        fseqDirEntryInit(&entry);
+        fseqFileNameSplit("/tmp/seq.1.exr", &entry.fileName, FSEQ_STRING_LEN);
+
         fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
-        assert(0 == strcmp(buf, "render.0.exr"));
+        assert(0 == strcmp(buf, "seq.0.exr"));
         fseqDirEntryToString(&entry, buf, FSEQ_TRUE, FSEQ_STRING_LEN);
-        assert(0 == strcmp(buf, "/tmp/render.0.exr"));
+        assert(0 == strcmp(buf, "/tmp/seq.0.exr"));
 
         entry.frameMin = 1000;
         entry.frameMax = 10000;
         fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
-        assert(0 == strcmp(buf, "render.1000-10000.exr"));
+        assert(0 == strcmp(buf, "seq.1000-10000.exr"));
         fseqDirEntryToString(&entry, buf, FSEQ_TRUE, FSEQ_STRING_LEN);
-        assert(0 == strcmp(buf, "/tmp/render.1000-10000.exr"));
+        assert(0 == strcmp(buf, "/tmp/seq.1000-10000.exr"));
 
         entry.hasFramePadding = FSEQ_TRUE;
         entry.framePadding = 5;
         fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
-        assert(0 == strcmp(buf, "render.01000-10000.exr"));
+        assert(0 == strcmp(buf, "seq.01000-10000.exr"));
 
         fseqDirEntryDel(&entry);
+    }
+    {
+        struct FSeqDirEntry* entry = NULL;
+        
+        mkdir("tests", 0777);
+        mkdir("tests/dir0", 0777);
+        entry = fseqDirList("tests/dir0", NULL, NULL);
+        assert(NULL == entry);
+    }
+    {
+        struct FSeqDirEntry* entry = NULL;
+        char buf[FSEQ_STRING_LEN];
+        
+        mkdir("tests", 0777);
+        mkdir("tests/dir1", 0777);
+        touch("tests/dir1/file");
+        entry = fseqDirList("tests/dir1", NULL, NULL);
+        assert(entry != NULL);
+        fseqDirEntryToString(entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
+        assert(0 == strcmp(buf, "file"));
+
+        fseqDirListDel(entry);
+    }
+    {
+        struct FSeqDirEntry* entry = NULL;
+        char buf[FSEQ_STRING_LEN];
+        
+        mkdir("tests", 0777);
+        mkdir("tests/dir2", 0777);
+        touch("tests/dir2/seq.1.exr");
+        touch("tests/dir2/seq.2.exr");
+        touch("tests/dir2/seq.3.exr");
+        entry = fseqDirList("tests/dir2", NULL, NULL);
+        assert(entry != NULL);
+        fseqDirEntryToString(entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
+        assert(0 == strcmp(buf, "seq.1-3.exr"));
+        
+        fseqDirListDel(entry);
     }
     return 0;
 }
