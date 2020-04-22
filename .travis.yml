@@ -13,7 +13,8 @@ addons:
 before_script:
 - mkdir build
 - cd build
-- build-wrapper-linux-x86-64 --out-dir ../bw-output cmake .. -DFSEQ_BUILD_TESTS=TRUE && make && make test
+- cmake .. -DFSEQ_BUILD_TESTS=TRUE
+- build-wrapper-linux-x86-64 --out-dir ../bw-output cmake --build . && make test
 - cd ..
 script:
 - sonar-scanner
