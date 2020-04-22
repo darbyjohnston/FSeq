@@ -67,7 +67,8 @@ int main(int argc, char** argv)
         }
     }
     {
-        struct FSeqFileNameSizes a, b;
+        struct FSeqFileNameSizes a;
+        struct FSeqFileNameSizes b;
         fseqFileNameSizesInit(&a);
         fseqFileNameSizesInit(&b);
         assert(fseqFileNameSizesCompare(&a, &b) != 0);
@@ -83,7 +84,6 @@ int main(int argc, char** argv)
         assert(NULL == a.extension);
     }
     {
-        char fileName[] = "/tmp/render.1.tif";
         struct FSeqFileName a;
         fseqFileNameInit(&a);
         fseqFileNameSplit("/tmp/render.1.tif", &a, FSEQ_STRING_LEN);

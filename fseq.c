@@ -99,9 +99,13 @@ unsigned short fseqFileNameParseSizes(
         if (_IS_NUMBER(*p))
         {
             while (p > in && (_IS_NUMBER(*(p - 1)) || _IS_NUMBER_SEPARATOR(*(p - 1))))
+            {
                 --p;
+            }
             if (_IS_NUMBER_SEPARATOR(*p))
+            {
                 ++p;
+            }
             out->number = (unsigned short)(end - (p - in) + 1);
             end = (int)(p - in - 1);
         }
@@ -343,7 +347,15 @@ void fseqDirEntryToString(const struct FSeqDirEntry* value, char* out, FSeqBool 
     }
 }
 
-struct _DirEntry
+static void _fseqSetError(FSeqBool* error)
+{
+    if (error)
+    {
+        *error = FSEQ_TRUE;
+    }
+}
+
+struct _FSeqDirEntry
 {
     char*                    fileName;
     struct FSeqFileNameSizes sizes;
@@ -351,15 +363,15 @@ struct _DirEntry
     int64_t                  frameMax;
     FSeqBool                 hasFramePadding;
     char                     framePadding;
-    struct _DirEntry*        next;
+    struct _FSeqDirEntry*    next;
 };
 
-static struct _DirEntry* _dirEntryCreate(
+static struct _FSeqDirEntry* _fseqDirEntryCreate(
     const char*                     fileName,
     size_t                          fileNameLen,
     const struct FSeqFileNameSizes* sizes)
 {
-    struct _DirEntry* out = (struct _DirEntry*)malloc(sizeof(struct _DirEntry));
+    struct _FSeqDirEntry* out = (struct _FSeqDirEntry*)malloc(sizeof(struct _FSeqDirEntry));
     if (!out)
     {
         return NULL;
@@ -396,7 +408,7 @@ static struct _DirEntry* _dirEntryCreate(
     return out;
 }
 
-static void _dirEntryDel(struct _DirEntry* value)
+static void _fseqDirEntryDel(struct _FSeqDirEntry* value)
 {
     free(value->fileName);
     value->fileName = NULL;
@@ -408,13 +420,16 @@ static void _dirEntryDel(struct _DirEntry* value)
 #define _IS_DOT_DOT_DIR(V, LEN) \
     (2 == LEN && '.' == V[0] && '.' == V[1])
 
-struct FSeqDirEntry* fseqDirList(const char* path, const struct FSeqDirOptions* options, FSeqBool* error)
+struct FSeqDirEntry* fseqDirList(
+    const char*                  path,
+    const struct FSeqDirOptions* options,
+    FSeqBool*                    error)
 {
     struct FSeqDirEntry*  out        = NULL;
     struct FSeqDirEntry*  entry      = NULL;
-    struct _DirEntry*     _entries   = NULL;
-    struct _DirEntry*     _entry     = NULL;
-    struct _DirEntry*     _lastEntry = NULL;
+    struct _FSeqDirEntry* _entries   = NULL;
+    struct _FSeqDirEntry* _entry     = NULL;
+    struct _FSeqDirEntry* _lastEntry = NULL;
     struct FSeqDirOptions _options;
 
     if (!options)
@@ -436,7 +451,7 @@ struct FSeqDirEntry* fseqDirList(const char* path, const struct FSeqDirOptions* 
     HANDLE hFind = FindFirstFile(glob, &ffd);
     if (INVALID_HANDLE_VALUE == hFind)
     {
-        if (error) *error = FSEQ_TRUE;
+        _fseqSetError(error);
         return NULL;
     }
 
@@ -468,10 +483,10 @@ struct FSeqDirEntry* fseqDirList(const char* path, const struct FSeqDirOptions* 
             if (!_entries)
             {
                 // Create the first entry in the list.
-                _entries = _dirEntryCreate(ffd.cFileName, fileNameLen, &sizes);
+                _entries = _fseqDirEntryCreate(ffd.cFileName, fileNameLen, &sizes);
                 if (!_entries)
                 {
-                    if (error) *error = FSEQ_TRUE;
+                    _fseqSetError(error);
                     break;
                 }
                 _lastEntry = _entries;
@@ -507,10 +522,10 @@ struct FSeqDirEntry* fseqDirList(const char* path, const struct FSeqDirOptions* 
                 if (!_entry)
                 {
                     // Create a new entry.
-                    _lastEntry->next = _dirEntryCreate(ffd.cFileName, fileNameLen, &sizes);
+                    _lastEntry->next = _fseqDirEntryCreate(ffd.cFileName, fileNameLen, &sizes);
                     if (!_lastEntry->next)
                     {
-                        if (error) *error = FSEQ_TRUE;
+                        _fseqSetError(error);
                         break;
                     }
                     _lastEntry = _lastEntry->next;
@@ -524,13 +539,13 @@ struct FSeqDirEntry* fseqDirList(const char* path, const struct FSeqDirOptions* 
 
 #else
 
-    DIR*           dir = NULL;
-    struct dirent* de  = NULL;
+    DIR*                 dir = NULL;
+    const struct dirent* de  = NULL;
 
     dir = opendir(path);
     if (!dir)
     {
-        if (error) *error = FSEQ_TRUE;
+        _fseqSetError(error);
         return NULL;
     }
 
@@ -562,10 +577,10 @@ struct FSeqDirEntry* fseqDirList(const char* path, const struct FSeqDirOptions* 
             if (!_entries)
             {
                 // Create the first entry in the list.
-                _entries = _dirEntryCreate(de->d_name, fileNameLen, &sizes);
+                _entries = _fseqDirEntryCreate(de->d_name, fileNameLen, &sizes);
                 if (!_entries)
                 {
-                    if (error) *error = FSEQ_TRUE;
+                    _fseqSetError(error);
                     break;
                 }
                 _lastEntry = _entries;
@@ -601,10 +616,10 @@ struct FSeqDirEntry* fseqDirList(const char* path, const struct FSeqDirOptions* 
                 if (!_entry)
                 {
                     // Create a new entry.
-                    _lastEntry->next = _dirEntryCreate(de->d_name, fileNameLen, &sizes);
+                    _lastEntry->next = _fseqDirEntryCreate(de->d_name, fileNameLen, &sizes);
                     if (!_lastEntry->next)
                     {
-                        if (error) *error = FSEQ_TRUE;
+                        _fseqSetError(error);
                         break;
                     }
                     _lastEntry = _lastEntry->next;
@@ -626,13 +641,13 @@ struct FSeqDirEntry* fseqDirList(const char* path, const struct FSeqDirOptions* 
             out = (struct FSeqDirEntry*)malloc(sizeof(struct FSeqDirEntry));
             if (!out)
             {
-                if (error) *error = FSEQ_TRUE;
+                _fseqSetError(error);
                 break;
             }
             fseqDirEntryInit(out);
             if (!fseqFileNameSplit2(_entry->fileName, &_entry->sizes, &out->fileName))
             {
-                if (error)* error = FSEQ_TRUE;
+                _fseqSetError(error);
                 break;
             }
             out->frameMin        = _entry->frameMin;
@@ -646,13 +661,13 @@ struct FSeqDirEntry* fseqDirList(const char* path, const struct FSeqDirOptions* 
             entry->next = (struct FSeqDirEntry*)malloc(sizeof(struct FSeqDirEntry));
             if (!entry->next)
             {
-                if (error)* error = FSEQ_TRUE;
+                _fseqSetError(error);
                 break;
             }
             fseqDirEntryInit(entry->next);
             if (!fseqFileNameSplit2(_entry->fileName, &_entry->sizes, &entry->next->fileName))
             {
-                if (error)* error = FSEQ_TRUE;
+                _fseqSetError(error);
                 break;
             }
             entry->next->frameMin        = _entry->frameMin;
@@ -669,9 +684,9 @@ struct FSeqDirEntry* fseqDirList(const char* path, const struct FSeqDirOptions* 
     _entry = _entries;
     while (_entry)
     {
-        struct _DirEntry* tmp = _entry;
+        struct _FSeqDirEntry* tmp = _entry;
         _entry = _entry->next;
-        _dirEntryDel(tmp);
+        _fseqDirEntryDel(tmp);
         free(tmp);
     }
 
