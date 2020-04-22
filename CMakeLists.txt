@@ -8,12 +8,14 @@ project(
     DESCRIPTION "FSeq is a C library for working with sequences of files."
     LANGUAGES C)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
+
 set(FSEQ_BUILD_BIN FALSE CACHE STRING "Whether to build the utilities")
 set(FSEQ_BUILD_TESTS FALSE CACHE STRING "Whether to build the tests")
 set(FSEQ_GCOV FALSE CACHE BOOL "Enable gcov code coverage")
 
 if(UNIX)
-    if(CMAKE_COMPILER_IS_GNUCXX)
+    if(CMAKE_COMPILER_IS_GNUCC)
         if(FSEQ_GCOV)
             include(CodeCoverage)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
