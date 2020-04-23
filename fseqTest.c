@@ -211,6 +211,8 @@ static void test9()
     _mkdir("tests/dir0");
     entry = fseqDirList("tests/dir0", NULL, NULL);
     assert(NULL == entry);
+    
+    fseqDirListDel(entry);
 }
 
 static void test10()
@@ -231,7 +233,7 @@ static void test10()
     assert(entry != NULL);
 
     size_t matches = 0;
-    for (struct FSeqDirEntry* i = entry; i != NULL; i = i->next)
+    for (const struct FSeqDirEntry* i = entry; i != NULL; i = i->next)
     {
         fseqDirEntryToString(i, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
         if (0 == strcmp(buf, "file"))
@@ -273,7 +275,7 @@ static void test11()
     assert(entry != NULL);
     
     size_t matches = 0;
-    for (struct FSeqDirEntry* i = entry; i != NULL; i = i->next)
+    for (const struct FSeqDirEntry* i = entry; i != NULL; i = i->next)
     {
         fseqDirEntryToString(i, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
         if (0 == strcmp(buf, "."))
@@ -318,6 +320,8 @@ static void test12()
     entry = fseqDirList("tests/dir4", NULL, &error);
     assert(NULL == entry);
     assert(FSEQ_TRUE == error);
+
+    fseqDirListDel(entry);
 }
 
 int main(int argc, char** argv)
