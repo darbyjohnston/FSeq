@@ -11,6 +11,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+static void _mkdir(const char* fileName)
+{
+    mkdir(fileName, 0777);
+}
+
 static void touch(const char* fileName)
 {
     fclose(fopen(fileName, "w"));
@@ -185,8 +190,8 @@ int main(int argc, char** argv)
     {
         struct FSeqDirEntry* entry = NULL;
         
-        mkdir("tests", 0777);
-        mkdir("tests/dir0", 0777);
+        _mkdir("tests");
+        _mkdir("tests/dir0");
         entry = fseqDirList("tests/dir0", NULL, NULL);
         assert(NULL == entry);
     }
@@ -194,8 +199,8 @@ int main(int argc, char** argv)
         struct FSeqDirEntry* entry = NULL;
         char buf[FSEQ_STRING_LEN];
         
-        mkdir("tests", 0777);
-        mkdir("tests/dir1", 0777);
+        _mkdir("tests");
+        _mkdir("tests/dir1");
         touch("tests/dir1/file");
         entry = fseqDirList("tests/dir1", NULL, NULL);
         assert(entry != NULL);
@@ -208,8 +213,8 @@ int main(int argc, char** argv)
         struct FSeqDirEntry* entry = NULL;
         char buf[FSEQ_STRING_LEN];
         
-        mkdir("tests", 0777);
-        mkdir("tests/dir2", 0777);
+        _mkdir("tests");
+        _mkdir("tests/dir2");
         touch("tests/dir2/seq.1.exr");
         touch("tests/dir2/seq.2.exr");
         touch("tests/dir2/seq.3.exr");
@@ -219,6 +224,71 @@ int main(int argc, char** argv)
         assert(0 == strcmp(buf, "seq.1-3.exr"));
         
         fseqDirListDel(entry);
+    }
+    {
+        struct FSeqDirEntry* entry = NULL;
+        struct FSeqDirOptions options;
+        char buf[FSEQ_STRING_LEN];
+        
+        fseqDirOptionsInit(&options);
+        options.dotAndDotDotDirs = FSEQ_TRUE;
+        options.dotFiles = FSEQ_TRUE;
+        options.sequence = FSEQ_FALSE;
+        _mkdir("tests");
+        _mkdir("tests/dir3");
+        touch("tests/dir3/.dotfile");
+        touch("tests/dir3/file");
+        touch("tests/dir3/seq.1.exr");
+        touch("tests/dir3/seq.2.exr");
+        touch("tests/dir3/seq.3.exr");
+        
+        entry = fseqDirList("tests/dir3", &options, NULL);
+        assert(entry != NULL);
+        
+        size_t matches = 0;
+        for (struct FSeqDirEntry* i = entry; i != NULL; i = i->next)
+        {
+            fseqDirEntryToString(i, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
+            if (0 == strcmp(buf, "."))
+            {
+                ++matches;
+            }
+            else if (0 == strcmp(buf, ".."))
+            {
+                ++matches;
+            }
+            else if (0 == strcmp(buf, ".dotfile"))
+            {
+                ++matches;
+            }
+            else if (0 == strcmp(buf, "file"))
+            {
+                ++matches;
+            }
+            else if (0 == strcmp(buf, "seq.1.exr"))
+            {
+                ++matches;
+            }
+            else if (0 == strcmp(buf, "seq.2.exr"))
+            {
+                ++matches;
+            }
+            else if (0 == strcmp(buf, "seq.3.exr"))
+            {
+                ++matches;
+            }
+        }
+        assert(7 == matches);
+        
+        fseqDirListDel(entry);
+    }
+    {
+        struct FSeqDirEntry* entry = NULL;
+        FSeqBool error = FSEQ_FALSE;
+
+        entry = fseqDirList("tests/dir4", NULL, &error);
+        assert(NULL == entry);
+        assert(FSEQ_TRUE == error);
     }
     return 0;
 }
