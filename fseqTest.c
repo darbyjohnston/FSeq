@@ -200,28 +200,35 @@ int main(int argc, char** argv)
         char buf[FSEQ_STRING_LEN];
         
         _mkdir("tests");
-        _mkdir("tests/dir1");
-        touch("tests/dir1/file");
-        entry = fseqDirList("tests/dir1", NULL, NULL);
-        assert(entry != NULL);
-        fseqDirEntryToString(entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
-        assert(0 == strcmp(buf, "file"));
-
-        fseqDirListDel(entry);
-    }
-    {
-        struct FSeqDirEntry* entry = NULL;
-        char buf[FSEQ_STRING_LEN];
-        
-        _mkdir("tests");
         _mkdir("tests/dir2");
+        touch("tests/dir2/file");
         touch("tests/dir2/seq.1.exr");
         touch("tests/dir2/seq.2.exr");
         touch("tests/dir2/seq.3.exr");
+        touch("tests/dir2/seq.0001.tiff");
+        touch("tests/dir2/seq.0002.tiff");
+        touch("tests/dir2/seq.0003.tiff");
         entry = fseqDirList("tests/dir2", NULL, NULL);
         assert(entry != NULL);
-        fseqDirEntryToString(entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
-        assert(0 == strcmp(buf, "seq.1-3.exr"));
+
+        size_t matches = 0;
+        for (struct FSeqDirEntry* i = entry; i != NULL; i = i->next)
+        {
+            fseqDirEntryToString(i, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
+            if (0 == strcmp(buf, "file"))
+            {
+                ++matches;
+            }
+            else if (0 == strcmp(buf, "seq.1-3.exr"))
+            {
+                ++matches;
+            }
+            else if (0 == strcmp(buf, "seq.0001-0003.tiff"))
+            {
+                ++matches;
+            }
+        }
+        assert(3 == matches);
         
         fseqDirListDel(entry);
     }
@@ -237,7 +244,6 @@ int main(int argc, char** argv)
         _mkdir("tests");
         _mkdir("tests/dir3");
         touch("tests/dir3/.dotfile");
-        touch("tests/dir3/file");
         touch("tests/dir3/seq.1.exr");
         touch("tests/dir3/seq.2.exr");
         touch("tests/dir3/seq.3.exr");
