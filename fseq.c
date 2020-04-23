@@ -240,7 +240,11 @@ void fseqDirOptionsInit(struct FSeqDirOptions* value)
     value->sequence         = FSEQ_TRUE;
 }
 
-void fseqDirEntryToString(const struct FSeqDirEntry* value, char* out, FSeqBool path, size_t max)
+void fseqDirEntryToString(
+    const struct FSeqDirEntry* value,
+    char*                      out,
+    FSeqBool                   path,
+    size_t                     max)
 {
     assert(value);
     assert(value->framePadding < 10);
@@ -249,9 +253,13 @@ void fseqDirEntryToString(const struct FSeqDirEntry* value, char* out, FSeqBool 
     static char format[FSEQ_STRING_LEN];
     if (path)
     {
-        if (value->fileName.path && value->fileName.base && value->fileName.number && value->fileName.extension)
+        if (value->fileName.path &&
+            value->fileName.base &&
+            value->fileName.number &&
+            value->fileName.extension)
         {
-            if (value->fileName.number[0] && (value->frameMin != value->frameMax))
+            if (value->fileName.number[0] &&
+                (value->frameMin != value->frameMax))
             {
                 format[ 0] = '%';
                 format[ 1] = 's';
@@ -269,7 +277,15 @@ void fseqDirEntryToString(const struct FSeqDirEntry* value, char* out, FSeqBool 
                 format[13] = '%';
                 format[14] = 's';
                 format[15] = 0;
-                snprintf(out, max, format, value->fileName.path, value->fileName.base, (int)value->frameMin, (int)value->frameMax, value->fileName.extension);
+                snprintf(
+                    out,
+                    max,
+                    format,
+                    value->fileName.path,
+                    value->fileName.base,
+                    (int)value->frameMin,
+                    (int)value->frameMax,
+                    value->fileName.extension);
             }
             else if (value->fileName.number[0])
             {
@@ -284,7 +300,14 @@ void fseqDirEntryToString(const struct FSeqDirEntry* value, char* out, FSeqBool 
                 format[ 8] = '%';
                 format[ 9] = 's';
                 format[10] = 0;
-                snprintf(out, max, format, value->fileName.path, value->fileName.base, (int)value->frameMin, value->fileName.extension);
+                snprintf(
+                    out,
+                    max,
+                    format,
+                    value->fileName.path,
+                    value->fileName.base,
+                    (int)value->frameMin,
+                    value->fileName.extension);
             }
             else
             {
@@ -295,15 +318,24 @@ void fseqDirEntryToString(const struct FSeqDirEntry* value, char* out, FSeqBool 
                 format[4] = '%';
                 format[5] = 's';
                 format[6] = 0;
-                snprintf(out, max, format, value->fileName.path, value->fileName.base, value->fileName.extension);
+                snprintf(
+                    out,
+                    max,
+                    format,
+                    value->fileName.path,
+                    value->fileName.base,
+                    value->fileName.extension);
             }
         }
     }
     else
     {
-        if (value->fileName.base && value->fileName.number && value->fileName.extension)
+        if (value->fileName.base &&
+            value->fileName.number &&
+            value->fileName.extension)
         {
-            if (value->fileName.number[0] && (value->frameMin != value->frameMax))
+            if (value->fileName.number[0] &&
+                (value->frameMin != value->frameMax))
             {
                 format[ 0] = '%';
                 format[ 1] = 's';
@@ -319,7 +351,14 @@ void fseqDirEntryToString(const struct FSeqDirEntry* value, char* out, FSeqBool 
                 format[11] = '%';
                 format[12] = 's';
                 format[13] = 0;
-                snprintf(out, max, format, value->fileName.base, (int)value->frameMin, (int)value->frameMax, value->fileName.extension);
+                snprintf(
+                    out,
+                    max,
+                    format,
+                    value->fileName.base,
+                    (int)value->frameMin,
+                    (int)value->frameMax,
+                    value->fileName.extension);
             }
             else if (value->fileName.number[0])
             {
@@ -332,7 +371,13 @@ void fseqDirEntryToString(const struct FSeqDirEntry* value, char* out, FSeqBool 
                 format[6] = '%';
                 format[7] = 's';
                 format[8] = 0;
-                snprintf(out, max, format, value->fileName.base, (int)value->frameMin, value->fileName.extension);
+                snprintf(
+                    out,
+                    max,
+                    format,
+                    value->fileName.base,
+                    (int)value->frameMin,
+                    value->fileName.extension);
             }
             else
             {
@@ -341,7 +386,12 @@ void fseqDirEntryToString(const struct FSeqDirEntry* value, char* out, FSeqBool 
                 format[2] = '%';
                 format[3] = 's';
                 format[4] = 0;
-                snprintf(out, max, format, value->fileName.base, value->fileName.extension);
+                snprintf(
+                    out,
+                    max,
+                    format,
+                    value->fileName.base,
+                    value->fileName.extension);
             }
         }
     }
