@@ -19,7 +19,7 @@ before_script:
 - cd build
 - cmake .. -DFSEQ_BUILD_TESTS=TRUE -DFSEQ_GCOV=TRUE
 - build-wrapper-linux-x86-64 --out-dir ../bw-output cmake --build .
-- ./fseqTest
+#- ./fseqTest
 - make test
 - sh ../gcov.sh ..
 - cd ..
