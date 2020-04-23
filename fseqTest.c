@@ -255,7 +255,6 @@ int main(int argc, char** argv)
         for (struct FSeqDirEntry* i = entry; i != NULL; i = i->next)
         {
             fseqDirEntryToString(i, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
-            printf("!%s %d\n", buf, matches);
             if (0 == strcmp(buf, "."))
             {
                 ++matches;
@@ -285,7 +284,7 @@ int main(int argc, char** argv)
                 ++matches;
             }
         }
-        assert(7 == matches);
+        assert(6 == matches);
         
         fseqDirListDel(entry);
     }
