@@ -45,11 +45,7 @@ void fseqFileNameSizesInit(struct FSeqFileNameSizes* value)
      '6' == V || \
      '7' == V || \
      '8' == V || \
-     '9' == V || \
-     '#' == V)
-#define _IS_NUMBER_SEPARATOR(V) \
-	('-' == V) || \
-	(',' == V)
+     '9' == V)
 
 unsigned short fseqFileNameParseSizes(
     const char*               in,
@@ -94,17 +90,26 @@ unsigned short fseqFileNameParseSizes(
             end = lastDot - 1;
         }
 
-        // Extract the number.
+        // Extract the number or wildcard.
         p = in + end;
         if (_IS_NUMBER(*p))
         {
-            while (p > in && (_IS_NUMBER(*(p - 1)) || _IS_NUMBER_SEPARATOR(*(p - 1))))
+            while (p > in && _IS_NUMBER(*(p - 1)))
             {
                 --p;
             }
-            if (_IS_NUMBER_SEPARATOR(*p))
+            if (p > in && '-' == *(p - 1))
             {
-                ++p;
+                --p;
+            }
+            out->number = (unsigned short)(end - (p - in) + 1);
+            end = (int)(p - in - 1);
+        }
+        else if ('#' == *p)
+        {
+            while (p > in && '#' == *(p - 1))
+            {
+                --p;
             }
             out->number = (unsigned short)(end - (p - in) + 1);
             end = (int)(p - in - 1);
@@ -222,7 +227,6 @@ void fseqDirEntryInit(struct FSeqDirEntry* value)
     fseqFileNameInit(&value->fileName);
     value->frameMin        = 0;
     value->frameMax        = 0;
-    value->hasFramePadding = FSEQ_FALSE;
     value->framePadding    = 0;
     value->next            = NULL;
 }
@@ -411,7 +415,6 @@ struct _FSeqDirEntry
     struct FSeqFileNameSizes sizes;
     int64_t                  frameMin;
     int64_t                  frameMax;
-    FSeqBool                 hasFramePadding;
     char                     framePadding;
     struct _FSeqDirEntry*    next;
 };
@@ -443,15 +446,20 @@ static struct _FSeqDirEntry* _fseqDirEntryCreate(
         memcpy(buf, fileName + sizes->path + sizes->base, sizes->number);
         buf[sizes->number] = 0;
         out->frameMin = out->frameMax = atoi(buf);
-        out->hasFramePadding = '0' == fileName[sizes->number] && _IS_NUMBER(fileName[sizes->number + 1]);
-        out->framePadding    = (char)FSEQ_MIN(sizes->number, 255);
+        if ('0' == fileName[sizes->number] && _IS_NUMBER(fileName[sizes->number + 1]))
+        {
+            out->framePadding = (char)FSEQ_MIN(sizes->number, 255);
+        }
+        else
+        {
+            out->framePadding = 0;
+        }
     }
     else
     {
-        out->frameMin        = 0;
-        out->frameMax        = 0;
-        out->hasFramePadding = FSEQ_FALSE;
-        out->framePadding    = 0;
+        out->frameMin     = 0;
+        out->frameMax     = 0;
+        out->framePadding = 0;
     }
 
     out->next = NULL;
@@ -558,10 +566,16 @@ struct FSeqDirEntry* fseqDirList(
                             buf[sizes.number] = 0;
                             const int number = atoi(buf);
 
-                            _entry->frameMin        = FSEQ_MIN(_entry->frameMin, number);
-                            _entry->frameMax        = FSEQ_MAX(_entry->frameMax, number);
-                            _entry->hasFramePadding = '0' == buf[0] && _IS_NUMBER(buf[1]);
-                            _entry->framePadding    = (char)FSEQ_MIN(FSEQ_MAX((size_t)_entry->framePadding, sizes.number), 255);
+                            _entry->frameMin = FSEQ_MIN(_entry->frameMin, number);
+                            _entry->frameMax = FSEQ_MAX(_entry->frameMax, number);
+                            if ('0' == buf[0] && _IS_NUMBER(buf[1]))
+                            {
+                                _entry->framePadding = (char)FSEQ_MIN(FSEQ_MAX((size_t)_entry->framePadding, sizes.number), 255);
+                            }
+                            else
+                            {
+                                _entry->framePadding = 0;
+                            }
 
                             break;
                         }
@@ -652,10 +666,16 @@ struct FSeqDirEntry* fseqDirList(
                             buf[sizes.number] = 0;
                             const int number = atoi(buf);
 
-                            _entry->frameMin        = FSEQ_MIN(_entry->frameMin, number);
-                            _entry->frameMax        = FSEQ_MAX(_entry->frameMax, number);
-                            _entry->hasFramePadding = '0' == buf[0] && _IS_NUMBER(buf[1]);
-                            _entry->framePadding    = (char)FSEQ_MIN(FSEQ_MAX((size_t)_entry->framePadding, sizes.number), 255);
+                            _entry->frameMin = FSEQ_MIN(_entry->frameMin, number);
+                            _entry->frameMax = FSEQ_MAX(_entry->frameMax, number);
+                            if ('0' == buf[0] && _IS_NUMBER(buf[1]))
+                            {
+                                _entry->framePadding = (char)FSEQ_MIN(FSEQ_MAX((size_t)_entry->framePadding, sizes.number), 255);
+                            }
+                            else
+                            {
+                                _entry->framePadding = 0;
+                            }
 
                             break;
                         }
@@ -700,10 +720,9 @@ struct FSeqDirEntry* fseqDirList(
                 _fseqSetError(error);
                 break;
             }
-            out->frameMin        = _entry->frameMin;
-            out->frameMax        = _entry->frameMax;
-            out->hasFramePadding = _entry->hasFramePadding;
-            out->framePadding    = _entry->framePadding;
+            out->frameMin     = _entry->frameMin;
+            out->frameMax     = _entry->frameMax;
+            out->framePadding = _entry->framePadding;
             entry = out;
         }
         else
@@ -720,10 +739,9 @@ struct FSeqDirEntry* fseqDirList(
                 _fseqSetError(error);
                 break;
             }
-            entry->next->frameMin        = _entry->frameMin;
-            entry->next->frameMax        = _entry->frameMax;
-            entry->next->hasFramePadding = _entry->hasFramePadding;
-            entry->next->framePadding    = _entry->framePadding;
+            entry->next->frameMin     = _entry->frameMin;
+            entry->next->frameMax     = _entry->frameMax;
+            entry->next->framePadding = _entry->framePadding;
             entry = entry->next;
         }
 

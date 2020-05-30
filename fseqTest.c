@@ -50,8 +50,8 @@ static void test1()
         { "/a/b/c10.ext", "/a/b/", "c", "10", ".ext" },
         { "/a/b/c100.ext", "/a/b/", "c", "100", ".ext" },
         { "/a/b/c0100.ext", "/a/b/", "c", "0100", ".ext" },
-        { "/a/b/c-0100.ext", "/a/b/", "c-", "0100", ".ext" },
-        { "C:\\a\\b\\c-0100.ext", "C:\\a\\b\\", "c-", "0100", ".ext" }
+        { "/a/b/c-0100.ext", "/a/b/", "c", "-0100", ".ext" },
+        { "C:\\a\\b\\c-0100.ext", "C:\\a\\b\\", "c", "-0100", ".ext" }
     };
     static const size_t testDataSize = sizeof(testData) / sizeof(testData[0]);
     
@@ -195,7 +195,6 @@ static void test8()
     fseqDirEntryToString(&entry, buf, FSEQ_TRUE, FSEQ_STRING_LEN);
     assert(0 == strcmp(buf, "/tmp/seq.1000-10000.exr"));
 
-    entry.hasFramePadding = FSEQ_TRUE;
     entry.framePadding = 5;
     fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
     assert(0 == strcmp(buf, "seq.01000-10000.exr"));

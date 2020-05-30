@@ -42,12 +42,12 @@ unsigned short fseqFileNameParseSizes(
     struct FSeqFileNameSizes* sizes,
     size_t                    max);
 
-// Compare FSeqFileNameSizes structs.
+// Compare structs.
 FSeqBool fseqFileNameSizesCompare(
     const struct FSeqFileNameSizes*,
     const struct FSeqFileNameSizes*);
 
-// This sruct provides file name components.
+// This struct provides file name components.
 struct FSeqFileName
 {
     char* path;
@@ -81,7 +81,6 @@ struct FSeqDirEntry
     struct FSeqFileName  fileName;
     int64_t              frameMin;
     int64_t              frameMax;
-    FSeqBool             hasFramePadding;
     char                 framePadding;
     struct FSeqDirEntry* next;
 };
