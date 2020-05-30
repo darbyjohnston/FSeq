@@ -6,7 +6,7 @@ FSeq
 ====
 FSeq is a C library for working with sequences of files. File sequences are
 commonly used in the VFX and film industry to represent individual frames of an
-animation or film clip. For example the files:
+animation or film. For example the files:
 * render.0001.exr
 * render.0002.exr
 * render.0003.exr
@@ -20,13 +20,14 @@ This makes browsing much easier when you have hundreds or thousands of
 files in a directory.
 
 FSeq compiles on Linux, OS X, and Windows. A CMakeLists.txt is provided
-but the library can be trivially included in other build systems since it
-consists of a single .h and .c file (fseq.h and fseq.c).
+for building the library, but the code can also be copied directly into
+another source tree for use (it consists of a single header and source
+file, fseq.h and fseq.c).
 
 FSeq is open source software distributed under a BSD style license. See
 the file LICENSE.txt for details.
 
-Example of how to split a file name into it's components:
+Example splitting a file name into a path, base name, number, and extension:
     
 	#include <fseq/fseq.h>
     ...
@@ -40,7 +41,7 @@ Output:
 
     /tmp/, render, 0100, .exr
 
-Example of how to list the contents of a directory:
+Example listing the contents of a directory with file sequences:
 
     #include <fseq/fseq.h>
     ...
