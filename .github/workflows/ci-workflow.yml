@@ -32,3 +32,4 @@ jobs:
       with:
         args: >
           -Dsonar.login=$SONAR_TOKEN
+          -Dsonar.password=""
