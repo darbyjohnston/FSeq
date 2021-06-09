@@ -1,6 +1,5 @@
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Build Status](https://travis-ci.org/darbyjohnston/FSeq.svg?branch=master)](https://travis-ci.org/darbyjohnston/FSeq)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=darbyjohnston_FSeq&metric=alert_status)](https://sonarcloud.io/dashboard?id=darbyjohnston_FSeq)
+[![Build Status](https://github.com/darbyjohnston/FSeq/actions/workflows/ci-workflow.yml/badge.svg)
 
 FSeq
 ====
