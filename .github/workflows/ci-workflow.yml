@@ -7,13 +7,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     - name: Run CMake
-      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Debug -DFSEQ_BUILD_BIN=TRUE -DFSEQ_BUILD_TESTS=TRUE
+      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Debug -DFSEQ_BUILD_BIN=TRUE -DFSEQ_BUILD_TESTS=TRUE -DFSEQ_GCOV=TRUE
 
     - name: Run make
       run: cd build && make
 
     - name: Run tests
       run: cd build && make test
+
+    - name: Coverage
+      run: cd build && ../gcov.sh ..
+
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: sonar-scanner -X -Dsonar.login=$SONAR_TOKEN
