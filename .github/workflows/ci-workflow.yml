@@ -21,7 +21,7 @@ jobs:
       run: cd build && make test
 
     - name: Coverage
-      run: cd build && ../gcov.sh ..
+      run: cd build && sh ../gcov.sh ..
       shell: bash
 
     - name: SonarCloud Scan
