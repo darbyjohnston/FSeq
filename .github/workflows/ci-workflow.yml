@@ -8,18 +8,27 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
 
-    - name: Run CMake
-      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Debug -DFSEQ_BUILD_BIN=TRUE -DFSEQ_BUILD_TESTS=TRUE -DFSEQ_GCOV=TRUE
+    - name: Update
+      run: sudo apt-get update
 
-    - name: Run make
-      run: cd build && make
+    - name: Install lcov
+      run: sudo apt-get install lcov
+
+    - name: Build FSeq
+      run: >
+        mkdir build &&
+        cd build &&
+        cmake .. -DCMAKE_BUILD_TYPE=Debug -DFSEQ_BUILD_BIN=TRUE -DFSEQ_BUILD_TESTS=TRUE -DFSEQ_GCOV=TRUE &&
+        cmake --build . -j 4
 
     - name: Run tests
-      run: cd build && make test
+      run: >
+        cd build &&
+        cmake --build . --target test &&
+        cat Testing/Temporary/LastTest.log
 
     - name: Coverage
-      run: cd build && sh ../gcov.sh ..
-      shell: bash
+      run: >
+        cd build &&
+        sh ../gcov.sh ..
