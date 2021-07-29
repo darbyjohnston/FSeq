@@ -8,6 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Boolean type.
 typedef char FSeqBool;
 #define FSEQ_TRUE 1
@@ -122,5 +126,9 @@ struct FSeqDirEntry* fseqDirList(
 
 // Delete a directory list.
 void fseqDirListDel(struct FSeqDirEntry*);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif // FSEQ_H
