@@ -1,6 +1,8 @@
 build
+Debug
+Release
+RelWithDebInfo
 doc/doxygen
 *~
 .git
 .vscode
-
