@@ -239,8 +239,8 @@ static void test9()
     struct FSeqDirEntry* entry = NULL;
     
     fseqMkdir("tests");
-    fseqMkdir("tests/dir0");
-    entry = fseqDirList("tests/dir0", NULL, NULL);
+    fseqMkdir("tests/test9");
+    entry = fseqDirList("tests/test9", NULL, NULL);
     assert(NULL == entry);
     
     fseqDirListDel(entry);
@@ -252,15 +252,15 @@ static void test10()
     char buf[FSEQ_STRING_LEN];
     
     fseqMkdir("tests");
-    fseqMkdir("tests/dir2");
-    fseqTouch("tests/dir2/file");
-    fseqTouch("tests/dir2/seq.1.exr");
-    fseqTouch("tests/dir2/seq.2.exr");
-    fseqTouch("tests/dir2/seq.3.exr");
-    fseqTouch("tests/dir2/seq.0001.tiff");
-    fseqTouch("tests/dir2/seq.0002.tiff");
-    fseqTouch("tests/dir2/seq.0003.tiff");
-    entry = fseqDirList("tests/dir2", NULL, NULL);
+    fseqMkdir("tests/test10");
+    fseqTouch("tests/test10/file");
+    fseqTouch("tests/test10/seq.1.exr");
+    fseqTouch("tests/test10/seq.2.exr");
+    fseqTouch("tests/test10/seq.3.exr");
+    fseqTouch("tests/test10/seq.0001.tiff");
+    fseqTouch("tests/test10/seq.0002.tiff");
+    fseqTouch("tests/test10/seq.0003.tiff");
+    entry = fseqDirList("tests/test10", NULL, NULL);
     assert(entry != NULL);
 
     size_t matches = 0;
@@ -296,13 +296,13 @@ static void test11()
     options.dotFiles = FSEQ_TRUE;
     options.sequence = FSEQ_FALSE;
     fseqMkdir("tests");
-    fseqMkdir("tests/dir3");
-    fseqTouch("tests/dir3/.dotfile");
-    fseqTouch("tests/dir3/seq.1.exr");
-    fseqTouch("tests/dir3/seq.2.exr");
-    fseqTouch("tests/dir3/seq.3.exr");
+    fseqMkdir("tests/test11");
+    fseqTouch("tests/test11/.dotfile");
+    fseqTouch("tests/test11/seq.1.exr");
+    fseqTouch("tests/test11/seq.2.exr");
+    fseqTouch("tests/test11/seq.3.exr");
     
-    entry = fseqDirList("tests/dir3", &options, NULL);
+    entry = fseqDirList("tests/test11", &options, NULL);
     assert(entry != NULL);
     
     size_t matches = 0;
