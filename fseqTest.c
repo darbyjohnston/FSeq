@@ -11,15 +11,47 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-static void _mkdir(const char* fileName)
+#if defined(WIN32) || defined(_WIN32)
+#include <direct.h>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif // WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
+#if defined(WIN32) || defined(_WIN32)
+
+static void fseqMkdir(const char* fileName)
+{
+    int wlen = MultiByteToWideChar(CP_UTF8, 0, fileName, -1, NULL, 0);
+    wchar_t* wbuf = malloc(wlen * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, fileName, -1, wbuf, wlen);
+    _wmkdir(wbuf);
+    free(wbuf);
+}
+
+static void fseqTouch(const char* fileName)
+{
+    int wlen = MultiByteToWideChar(CP_UTF8, 0, fileName, -1, NULL, 0);
+    wchar_t* wbuf = malloc(wlen * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, fileName, -1, wbuf, wlen);
+    fclose(_wfopen(wbuf, L"w"));
+    free(wbuf);
+}
+
+#else
+
+static void fseqMkdir(const char* fileName)
 {
     mkdir(fileName, 0777);
 }
 
-static void touch(const char* fileName)
+static void fseqTouch(const char* fileName)
 {
     fclose(fopen(fileName, "w"));
 }
+
+#endif
 
 static void test0()
 {
@@ -206,8 +238,8 @@ static void test9()
 {
     struct FSeqDirEntry* entry = NULL;
     
-    _mkdir("tests");
-    _mkdir("tests/dir0");
+    fseqMkdir("tests");
+    fseqMkdir("tests/dir0");
     entry = fseqDirList("tests/dir0", NULL, NULL);
     assert(NULL == entry);
     
@@ -219,15 +251,15 @@ static void test10()
     struct FSeqDirEntry* entry = NULL;
     char buf[FSEQ_STRING_LEN];
     
-    _mkdir("tests");
-    _mkdir("tests/dir2");
-    touch("tests/dir2/file");
-    touch("tests/dir2/seq.1.exr");
-    touch("tests/dir2/seq.2.exr");
-    touch("tests/dir2/seq.3.exr");
-    touch("tests/dir2/seq.0001.tiff");
-    touch("tests/dir2/seq.0002.tiff");
-    touch("tests/dir2/seq.0003.tiff");
+    fseqMkdir("tests");
+    fseqMkdir("tests/dir2");
+    fseqTouch("tests/dir2/file");
+    fseqTouch("tests/dir2/seq.1.exr");
+    fseqTouch("tests/dir2/seq.2.exr");
+    fseqTouch("tests/dir2/seq.3.exr");
+    fseqTouch("tests/dir2/seq.0001.tiff");
+    fseqTouch("tests/dir2/seq.0002.tiff");
+    fseqTouch("tests/dir2/seq.0003.tiff");
     entry = fseqDirList("tests/dir2", NULL, NULL);
     assert(entry != NULL);
 
@@ -263,12 +295,12 @@ static void test11()
     options.dotAndDotDotDirs = FSEQ_TRUE;
     options.dotFiles = FSEQ_TRUE;
     options.sequence = FSEQ_FALSE;
-    _mkdir("tests");
-    _mkdir("tests/dir3");
-    touch("tests/dir3/.dotfile");
-    touch("tests/dir3/seq.1.exr");
-    touch("tests/dir3/seq.2.exr");
-    touch("tests/dir3/seq.3.exr");
+    fseqMkdir("tests");
+    fseqMkdir("tests/dir3");
+    fseqTouch("tests/dir3/.dotfile");
+    fseqTouch("tests/dir3/seq.1.exr");
+    fseqTouch("tests/dir3/seq.2.exr");
+    fseqTouch("tests/dir3/seq.3.exr");
     
     entry = fseqDirList("tests/dir3", &options, NULL);
     assert(entry != NULL);
@@ -323,6 +355,33 @@ static void test12()
     fseqDirListDel(entry);
 }
 
+static void test13()
+{
+    struct FSeqDirEntry* entry = NULL;
+    char buf[FSEQ_STRING_LEN];
+
+    fseqMkdir("tests");
+    fseqMkdir("tests/测试文件夹");
+    fseqTouch("tests/测试文件夹/大平原_1.jpg");
+    fseqTouch("tests/测试文件夹/大平原_2.jpg");
+
+    entry = fseqDirList("tests/测试文件夹", NULL, NULL);
+    assert(entry != NULL);
+
+    size_t matches = 0;
+    for (const struct FSeqDirEntry* i = entry; i != NULL; i = i->next)
+    {
+        fseqDirEntryToString(i, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
+        if (0 == strcmp(buf, "大平原_1-2.jpg"))
+        {
+            ++matches;
+        }
+    }
+    assert(1 == matches);
+
+    fseqDirListDel(entry);
+}
+
 int main(int argc, char** argv)
 {
     test0();
@@ -338,6 +397,7 @@ int main(int argc, char** argv)
     test10();
     test11();
     test12();
+    test13();
     return 0;
 }
 

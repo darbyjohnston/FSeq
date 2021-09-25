@@ -250,11 +250,12 @@ void fseqDirEntryToString(
     FSeqBool                   path,
     size_t                     max)
 {
+    char format[FSEQ_STRING_LEN];
+
     assert(value);
     assert(value->framePadding < 10);
     assert(max > 0);
     out[0] = 0;
-    static char format[FSEQ_STRING_LEN];
     if (path)
     {
         if (value->fileName.path &&
@@ -442,7 +443,7 @@ static struct _FSeqDirEntry* _fseqDirEntryCreate(
     out->sizes = *sizes;
     if (sizes->number)
     {
-        static char buf[FSEQ_STRING_LEN];
+        char buf[FSEQ_STRING_LEN];
         memcpy(buf, fileName + sizes->path + sizes->base, sizes->number);
         buf[sizes->number] = 0;
         out->frameMin = out->frameMax = atoi(buf);
@@ -489,6 +490,17 @@ struct FSeqDirEntry* fseqDirList(
     struct _FSeqDirEntry* _entry     = NULL;
     struct _FSeqDirEntry* _lastEntry = NULL;
     struct FSeqDirOptions _options;
+#if defined(WIN32) || defined(_WIN32)
+    char                  glob[FSEQ_STRING_LEN];
+    size_t                pathLen    = 0;
+    int                   wLen       = 0;
+    wchar_t*              wBuf       = NULL;
+    WIN32_FIND_DATAW      ffd;
+    HANDLE                hFind      = NULL;
+#else
+    DIR*                 dir = NULL;
+    const struct dirent* de  = NULL;
+#endif
 
     if (!options)
     {
@@ -496,44 +508,53 @@ struct FSeqDirEntry* fseqDirList(
         options = &_options;
     }
 
-#if defined(WIN32)
+#if defined(WIN32) || defined(_WIN32)
 
-    static char glob[FSEQ_STRING_LEN];
-    const size_t len = strlen(path);
-    memcpy(glob, path, len);
-    glob[len] = '\\';
-    glob[len + 1] = '*';
-    glob[len + 2] = 0;
+    pathLen = strlen(path);
+    memcpy(glob, path, pathLen);
+    glob[pathLen] = '\\';
+    glob[pathLen + 1] = '*';
+    glob[pathLen + 2] = 0;
 
-    WIN32_FIND_DATA ffd;
-    HANDLE hFind = FindFirstFile(glob, &ffd);
+    wLen = MultiByteToWideChar(CP_UTF8, 0, glob, -1, NULL, 0);
+    wBuf = malloc(wLen * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, glob, -1, wBuf, wLen);
+
+    hFind = FindFirstFileW(wBuf, &ffd);
     if (INVALID_HANDLE_VALUE == hFind)
     {
+        free(wBuf);
         _fseqSetError(error);
         return NULL;
     }
 
     do
     {
+        int                      fileNameByteCount = 0;
+        char*                    fileNameBuf       = NULL;
         struct FSeqFileNameSizes sizes;
-        unsigned short           fileNameLen = 0;
-        FSeqBool                 filter      = FSEQ_FALSE;
+        unsigned short           fileNameLen       = 0;
+        FSeqBool                 filter            = FSEQ_FALSE;
+
+        fileNameByteCount = WideCharToMultiByte(CP_UTF8, 0, ffd.cFileName, -1, NULL, 0, NULL, NULL);
+        fileNameBuf = malloc(fileNameByteCount);
+        WideCharToMultiByte(CP_UTF8, 0, ffd.cFileName, -1, fileNameBuf, fileNameByteCount, NULL, NULL);
 
         fseqFileNameSizesInit(&sizes);
-        fileNameLen = fseqFileNameParseSizes(ffd.cFileName, &sizes, FSEQ_STRING_LEN);
+        fileNameLen = fseqFileNameParseSizes(fileNameBuf, &sizes, FSEQ_STRING_LEN);
 
         // Filter the entry.
-        if (!options->dotAndDotDotDirs && _IS_DOT_DIR(ffd.cFileName, fileNameLen))
+        if (!options->dotAndDotDotDirs && _IS_DOT_DIR(fileNameBuf, fileNameLen))
         {
             filter = FSEQ_TRUE;
         }
-        else if (!options->dotAndDotDotDirs && _IS_DOT_DOT_DIR(ffd.cFileName, fileNameLen))
+        else if (!options->dotAndDotDotDirs && _IS_DOT_DOT_DIR(fileNameBuf, fileNameLen))
         {
             filter = FSEQ_TRUE;
         }
         else if (!options->dotFiles && sizes.base)
         {
-            filter |= '.' == *(ffd.cFileName + sizes.path);
+            filter |= '.' == *(fileNameBuf + sizes.path);
         }
 
         if (!filter)
@@ -541,7 +562,7 @@ struct FSeqDirEntry* fseqDirList(
             if (!_entries)
             {
                 // Create the first entry in the list.
-                _entries = _fseqDirEntryCreate(ffd.cFileName, fileNameLen, &sizes);
+                _entries = _fseqDirEntryCreate(fileNameBuf, fileNameLen, &sizes);
                 if (!_entries)
                 {
                     _fseqSetError(error);
@@ -559,12 +580,14 @@ struct FSeqDirEntry* fseqDirList(
                     _entry = _entries;
                     while (_entry)
                     {
-                        if (fseqFileNameMatch(ffd.cFileName, &sizes, _entry->fileName, &_entry->sizes))
+                        if (fseqFileNameMatch(fileNameBuf, &sizes, _entry->fileName, &_entry->sizes))
                         {
-                            static char buf[FSEQ_STRING_LEN];
-                            memcpy(buf, ffd.cFileName + sizes.path + sizes.base, sizes.number);
+                            char buf[FSEQ_STRING_LEN];
+                            int number = 0;
+
+                            memcpy(buf, fileNameBuf + sizes.path + sizes.base, sizes.number);
                             buf[sizes.number] = 0;
-                            const int number = atoi(buf);
+                            number = atoi(buf);
 
                             _entry->frameMin = FSEQ_MIN(_entry->frameMin, number);
                             _entry->frameMax = FSEQ_MAX(_entry->frameMax, number);
@@ -586,7 +609,7 @@ struct FSeqDirEntry* fseqDirList(
                 if (!_entry)
                 {
                     // Create a new entry.
-                    _lastEntry->next = _fseqDirEntryCreate(ffd.cFileName, fileNameLen, &sizes);
+                    _lastEntry->next = _fseqDirEntryCreate(fileNameBuf, fileNameLen, &sizes);
                     if (!_lastEntry->next)
                     {
                         _fseqSetError(error);
@@ -597,14 +620,15 @@ struct FSeqDirEntry* fseqDirList(
             }
         }
 
-    } while (FindNextFile(hFind, &ffd) != 0);
+        free(fileNameBuf);
+
+    } while (FindNextFileW(hFind, &ffd) != 0);
 
     FindClose(hFind);
 
-#else
+    free(wBuf);
 
-    DIR*                 dir = NULL;
-    const struct dirent* de  = NULL;
+#else
 
     dir = opendir(path);
     if (!dir)
@@ -661,10 +685,12 @@ struct FSeqDirEntry* fseqDirList(
                     {
                         if (fseqFileNameMatch(de->d_name, &sizes, _entry->fileName, &_entry->sizes))
                         {
-                            static char buf[FSEQ_STRING_LEN];
+                            char buf[FSEQ_STRING_LEN];
+                            int number = 0;
+
                             memcpy(buf, de->d_name + sizes.path + sizes.base, sizes.number);
                             buf[sizes.number] = 0;
-                            const int number = atoi(buf);
+                            number = atoi(buf);
 
                             _entry->frameMin = FSEQ_MIN(_entry->frameMin, number);
                             _entry->frameMax = FSEQ_MAX(_entry->frameMax, number);
