@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-// Copyright (c) 2019-2020 Darby Johnston
+// Copyright (c) 2019-2021 Darby Johnston
 // All rights reserved.
 
 #ifndef FSEQ_H
