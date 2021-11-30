@@ -320,7 +320,7 @@ static void test11()
 
     entry = fseqDirList("tests/test11", &options, NULL);
     assert(entry != NULL);
-    
+
     size_t matches = 0;
     for (const struct FSeqDirEntry* i = entry; i != NULL; i = i->next)
     {
@@ -359,11 +359,49 @@ static void test11()
         }
     }
     assert(7 == matches);
-    
+
     fseqDirListDel(entry);
 }
 
 static void test12()
+{
+    const size_t count = 65536;
+    struct FSeqDirEntry* entry = NULL;
+    struct FSeqDirOptions options;
+    char buf[FSEQ_STRING_LEN];
+    char buf2[FSEQ_STRING_LEN];
+
+    fseqDirOptionsInit(&options);
+    options.dotAndDotDotDirs = FSEQ_TRUE;
+    options.dotFiles = FSEQ_FALSE;
+    options.sequence = FSEQ_TRUE;
+    fseqMkdir("tests");
+    fseqMkdir("tests/test12");
+    for (size_t i = 0; i < count; ++i)
+    {
+        snprintf(buf2, FSEQ_STRING_LEN, "tests/test12/large.%08d.exr", i);
+        fseqTouch(buf2);
+    }
+    snprintf(buf2, FSEQ_STRING_LEN, "large.%08d-%08d.exr", 0, count - 1);
+
+    entry = fseqDirList("tests/test12", &options, NULL);
+    assert(entry != NULL);
+
+    size_t matches = 0;
+    for (const struct FSeqDirEntry* i = entry; i != NULL; i = i->next)
+    {
+        fseqDirEntryToString(i, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
+        if (0 == strcmp(buf, buf2))
+        {
+            ++matches;
+        }
+    }
+    assert(1 == matches);
+
+    fseqDirListDel(entry);
+}
+
+static void test13()
 {
     struct FSeqDirEntry* entry = NULL;
     FSeqBool error = FSEQ_FALSE;
@@ -375,7 +413,7 @@ static void test12()
     fseqDirListDel(entry);
 }
 
-static void test13()
+static void test14()
 {
     struct FSeqDirEntry* entry = NULL;
     char buf[FSEQ_STRING_LEN];
@@ -418,6 +456,7 @@ int main(int argc, char** argv)
     test11();
     test12();
     test13();
+    test14();
     return 0;
 }
 

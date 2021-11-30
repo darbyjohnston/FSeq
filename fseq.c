@@ -446,6 +446,14 @@ struct _FSeqDirEntry
     struct _FSeqDirEntry*    next;
 };
 
+static int64_t _toInt64(const char* value)
+{
+    size_t max = 0;
+    for (; '0' == value[0] && value[1] && max < 256; ++value, ++max)
+        ;
+    return strtoll(value, NULL, 0);
+}
+
 static struct _FSeqDirEntry* _fseqDirEntryCreate(
     const char*                     fileName,
     size_t                          fileNameLen,
@@ -472,7 +480,7 @@ static struct _FSeqDirEntry* _fseqDirEntryCreate(
         char buf[FSEQ_STRING_LEN];
         memcpy(buf, fileName + sizes->path + sizes->base, sizes->number);
         buf[sizes->number] = 0;
-        out->frameMin = out->frameMax = strtoll(buf, NULL, 0);
+        out->frameMin = out->frameMax = _toInt64(buf);
         if ('0' == fileName[sizes->number] && _IS_NUMBER(fileName[sizes->number + 1]))
         {
             out->framePadding = (char)FSEQ_MIN(sizes->number, 255);
@@ -613,7 +621,9 @@ struct FSeqDirEntry* fseqDirList(
 
                             memcpy(buf, fileNameBuf + sizes.path + sizes.base, sizes.number);
                             buf[sizes.number] = 0;
-                            number = strtoll(buf, NULL, 0);
+                            number = _toInt64(buf);
+
+                            //printf("number: %" PRId64 "\n", number);
 
                             _entry->frameMin = FSEQ_MIN(_entry->frameMin, number);
                             _entry->frameMax = FSEQ_MAX(_entry->frameMax, number);
@@ -716,7 +726,7 @@ struct FSeqDirEntry* fseqDirList(
 
                             memcpy(buf, de->d_name + sizes.path + sizes.base, sizes.number);
                             buf[sizes.number] = 0;
-                            number = strtoll(buf, NULL, 0);
+                            number = _toInt64(buf);
 
                             _entry->frameMin = FSEQ_MIN(_entry->frameMin, number);
                             _entry->frameMax = FSEQ_MAX(_entry->frameMax, number);
