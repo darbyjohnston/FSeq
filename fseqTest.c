@@ -212,6 +212,7 @@ static void test8()
 {
     struct FSeqDirEntry entry;
     char buf[FSEQ_STRING_LEN];
+    char buf2[FSEQ_STRING_LEN];
 
     fseqDirEntryInit(&entry);
     fseqFileNameSplit("/tmp/seq.1.exr", &entry.fileName, FSEQ_STRING_LEN);
@@ -236,11 +237,10 @@ static void test8()
     entry.frameMax = INT64_MAX;
     entry.framePadding = 0;
     fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
-    char buf2[FSEQ_STRING_LEN];
-    snprintf(buf2, FSEQ_STRING_LEN, "seq.%" PRId64 "-%" PRId64 ".exr", 0, INT64_MAX);
+    snprintf(buf2, FSEQ_STRING_LEN, "seq.%" PRId64 "-%" PRId64 ".exr", (int64_t)0, INT64_MAX);
     assert(0 == strcmp(buf, buf2));
     fseqDirEntryToString(&entry, buf, FSEQ_TRUE, FSEQ_STRING_LEN);
-    snprintf(buf2, FSEQ_STRING_LEN, "/tmp/seq.%" PRId64 "-%" PRId64 ".exr", 0, INT64_MAX);
+    snprintf(buf2, FSEQ_STRING_LEN, "/tmp/seq.%" PRId64 "-%" PRId64 ".exr", (int64_t)0, INT64_MAX);
     assert(0 == strcmp(buf, buf2));
 
     fseqDirEntryDel(&entry);
@@ -302,7 +302,8 @@ static void test11()
     struct FSeqDirEntry* entry = NULL;
     struct FSeqDirOptions options;
     char buf[FSEQ_STRING_LEN];
-    
+    char buf2[FSEQ_STRING_LEN];
+
     fseqDirOptionsInit(&options);
     options.dotAndDotDotDirs = FSEQ_TRUE;
     options.dotFiles = FSEQ_TRUE;
@@ -313,7 +314,10 @@ static void test11()
     fseqTouch("tests/test11/seq.1.exr");
     fseqTouch("tests/test11/seq.2.exr");
     fseqTouch("tests/test11/seq.3.exr");
-    
+    snprintf(buf2, FSEQ_STRING_LEN, "tests/test11/large.%" PRId64 ".exr", INT64_MAX);
+    fseqTouch(buf2);
+    snprintf(buf2, FSEQ_STRING_LEN, "large.%" PRId64 ".exr", INT64_MAX);
+
     entry = fseqDirList("tests/test11", &options, NULL);
     assert(entry != NULL);
     
@@ -349,8 +353,12 @@ static void test11()
         {
             ++matches;
         }
+        else if (0 == strcmp(buf, buf2))
+        {
+            ++matches;
+        }
     }
-    assert(6 == matches);
+    assert(7 == matches);
     
     fseqDirListDel(entry);
 }

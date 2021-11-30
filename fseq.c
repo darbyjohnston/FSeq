@@ -472,7 +472,7 @@ static struct _FSeqDirEntry* _fseqDirEntryCreate(
         char buf[FSEQ_STRING_LEN];
         memcpy(buf, fileName + sizes->path + sizes->base, sizes->number);
         buf[sizes->number] = 0;
-        out->frameMin = out->frameMax = atoi(buf);
+        out->frameMin = out->frameMax = strtoll(buf, NULL, 0);
         if ('0' == fileName[sizes->number] && _IS_NUMBER(fileName[sizes->number + 1]))
         {
             out->framePadding = (char)FSEQ_MIN(sizes->number, 255);
@@ -609,11 +609,11 @@ struct FSeqDirEntry* fseqDirList(
                         if (fseqFileNameMatch(fileNameBuf, &sizes, _entry->fileName, &_entry->sizes))
                         {
                             char buf[FSEQ_STRING_LEN];
-                            int number = 0;
+                            int64_t number = 0;
 
                             memcpy(buf, fileNameBuf + sizes.path + sizes.base, sizes.number);
                             buf[sizes.number] = 0;
-                            number = atoi(buf);
+                            number = strtoll(buf, NULL, 0);
 
                             _entry->frameMin = FSEQ_MIN(_entry->frameMin, number);
                             _entry->frameMax = FSEQ_MAX(_entry->frameMax, number);
@@ -712,11 +712,11 @@ struct FSeqDirEntry* fseqDirList(
                         if (fseqFileNameMatch(de->d_name, &sizes, _entry->fileName, &_entry->sizes))
                         {
                             char buf[FSEQ_STRING_LEN];
-                            int number = 0;
+                            int64_t number = 0;
 
                             memcpy(buf, de->d_name + sizes.path + sizes.base, sizes.number);
                             buf[sizes.number] = 0;
-                            number = atoi(buf);
+                            number = strtoll(buf, NULL, 0);
 
                             _entry->frameMin = FSEQ_MIN(_entry->frameMin, number);
                             _entry->frameMax = FSEQ_MAX(_entry->frameMax, number);
