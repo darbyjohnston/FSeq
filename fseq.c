@@ -5,6 +5,7 @@
 #include "fseq.h"
 
 #include <assert.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -256,6 +257,7 @@ void fseqDirEntryToString(
     assert(value->framePadding < 10);
     assert(max > 0);
     out[0] = 0;
+    const size_t l = strlen(PRId64);
     if (path)
     {
         if (value->fileName.path &&
@@ -266,63 +268,75 @@ void fseqDirEntryToString(
             if (value->fileName.number[0] &&
                 (value->frameMin != value->frameMax))
             {
-                format[ 0] = '%';
-                format[ 1] = 's';
-                format[ 2] = '%';
-                format[ 3] = 's';
-                format[ 4] = '%';
-                format[ 5] = '0';
-                format[ 6] = '0' + value->framePadding;
-                format[ 7] = 'd';
-                format[ 8] = '-';
-                format[ 9] = '%';
-                format[10] = '0';
-                format[11] = '0' + value->framePadding;
-                format[12] = 'd';
-                format[13] = '%';
-                format[14] = 's';
-                format[15] = 0;
+                size_t i = 0;
+                format[i++] = '%';
+                format[i++] = 's';
+                format[i++] = '%';
+                format[i++] = 's';
+                format[i++] = '%';
+                format[i++] = '0';
+                format[i++] = '0' + value->framePadding;
+                for (size_t j = 0; j < l; ++j)
+                {
+                    format[i++] = PRId64[j];
+                }
+                format[i++] = '-';
+                format[i++] = '%';
+                format[i++] = '0';
+                format[i++] = '0' + value->framePadding;
+                for (size_t j = 0; j < l; ++j)
+                {
+                    format[i++] = PRId64[j];
+                }
+                format[i++] = '%';
+                format[i++] = 's';
+                format[i++] = 0;
                 snprintf(
                     out,
                     max,
                     format,
                     value->fileName.path,
                     value->fileName.base,
-                    (int)value->frameMin,
-                    (int)value->frameMax,
+                    value->frameMin,
+                    value->frameMax,
                     value->fileName.extension);
             }
             else if (value->fileName.number[0])
             {
-                format[ 0] = '%';
-                format[ 1] = 's';
-                format[ 2] = '%';
-                format[ 3] = 's';
-                format[ 4] = '%';
-                format[ 5] = '0';
-                format[ 6] = '0' + value->framePadding;
-                format[ 7] = 'd';
-                format[ 8] = '%';
-                format[ 9] = 's';
-                format[10] = 0;
+                size_t i = 0;
+                format[i++] = '%';
+                format[i++] = 's';
+                format[i++] = '%';
+                format[i++] = 's';
+                format[i++] = '%';
+                format[i++] = '0';
+                format[i++] = '0' + value->framePadding;
+                for (size_t j = 0; j < l; ++j)
+                {
+                    format[i++] = PRId64[j];
+                }
+                format[i++] = '%';
+                format[i++] = 's';
+                format[i++] = 0;
                 snprintf(
                     out,
                     max,
                     format,
                     value->fileName.path,
                     value->fileName.base,
-                    (int)value->frameMin,
+                    value->frameMin,
                     value->fileName.extension);
             }
             else
             {
-                format[0] = '%';
-                format[1] = 's';
-                format[2] = '%';
-                format[3] = 's';
-                format[4] = '%';
-                format[5] = 's';
-                format[6] = 0;
+                size_t i = 0;
+                format[i++] = '%';
+                format[i++] = 's';
+                format[i++] = '%';
+                format[i++] = 's';
+                format[i++] = '%';
+                format[i++] = 's';
+                format[i++] = 0;
                 snprintf(
                     out,
                     max,
@@ -342,55 +356,67 @@ void fseqDirEntryToString(
             if (value->fileName.number[0] &&
                 (value->frameMin != value->frameMax))
             {
-                format[ 0] = '%';
-                format[ 1] = 's';
-                format[ 2] = '%';
-                format[ 3] = '0';
-                format[ 4] = '0' + value->framePadding;
-                format[ 5] = 'd';
-                format[ 6] = '-';
-                format[ 7] = '%';
-                format[ 8] = '0';
-                format[ 9] = '0' + value->framePadding;
-                format[10] = 'd';
-                format[11] = '%';
-                format[12] = 's';
-                format[13] = 0;
+                size_t i = 0;
+                format[i++] = '%';
+                format[i++] = 's';
+                format[i++] = '%';
+                format[i++] = '0';
+                format[i++] = '0' + value->framePadding;
+                for (size_t j = 0; j < l; ++j)
+                {
+                    format[i++] = PRId64[j];
+                }
+                format[i++] = '-';
+                format[i++] = '%';
+                format[i++] = '0';
+                format[i++] = '0' + value->framePadding;
+                for (size_t j = 0; j < l; ++j)
+                {
+                    format[i++] = PRId64[j];
+                }
+                format[i++] = '%';
+                format[i++] = 's';
+                format[i++] = 0;
                 snprintf(
                     out,
                     max,
                     format,
                     value->fileName.base,
-                    (int)value->frameMin,
-                    (int)value->frameMax,
+                    value->frameMin,
+                    value->frameMax,
                     value->fileName.extension);
             }
             else if (value->fileName.number[0])
             {
-                format[0] = '%';
-                format[1] = 's';
-                format[2] = '%';
-                format[3] = '0';
-                format[4] = '0' + value->framePadding;
-                format[5] = 'd';
-                format[6] = '%';
-                format[7] = 's';
-                format[8] = 0;
+                size_t i = 0;
+                format[i++] = '%';
+                format[i++] = 's';
+                format[i++] = '%';
+                format[i++] = '0';
+                format[i++] = '0' + value->framePadding;
+                for (size_t j = 0; j < l; ++j)
+                {
+                    format[i++] = PRId64[j];
+                }
+                format[i++] = '%';
+                format[i++] = 's';
+                format[i++] = 0;
                 snprintf(
                     out,
                     max,
                     format,
                     value->fileName.base,
-                    (int)value->frameMin,
+                    value->frameMin,
                     value->fileName.extension);
             }
             else
             {
-                format[0] = '%';
-                format[1] = 's';
-                format[2] = '%';
-                format[3] = 's';
-                format[4] = 0;
+                size_t i = 0;
+                format[i++] = '%';
+                format[i++] = 's';
+                format[i++] = '%';
+                format[i++] = 's';
+                format[i++] = 0;
                 snprintf(
                     out,
                     max,

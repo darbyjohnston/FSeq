@@ -5,6 +5,7 @@
 #include "fseq.h"
 
 #include <assert.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -230,6 +231,17 @@ static void test8()
     entry.framePadding = 5;
     fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
     assert(0 == strcmp(buf, "seq.01000-10000.exr"));
+
+    entry.frameMin = 0;
+    entry.frameMax = INT64_MAX;
+    entry.framePadding = 0;
+    fseqDirEntryToString(&entry, buf, FSEQ_FALSE, FSEQ_STRING_LEN);
+    char buf2[FSEQ_STRING_LEN];
+    snprintf(buf2, FSEQ_STRING_LEN, "seq.%" PRId64 "-%" PRId64 ".exr", 0, INT64_MAX);
+    assert(0 == strcmp(buf, buf2));
+    fseqDirEntryToString(&entry, buf, FSEQ_TRUE, FSEQ_STRING_LEN);
+    snprintf(buf2, FSEQ_STRING_LEN, "/tmp/seq.%" PRId64 "-%" PRId64 ".exr", 0, INT64_MAX);
+    assert(0 == strcmp(buf, buf2));
 
     fseqDirEntryDel(&entry);
 }
