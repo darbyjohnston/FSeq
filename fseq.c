@@ -176,7 +176,7 @@ void fseqFileNameSplit(
     const char* fileName,
     struct FSeqFileName* out,
     size_t max,
-    struct FSeqFileNameOptions* options)
+    const struct FSeqFileNameOptions* options)
 {
     struct FSeqFileNameSizes sizes;
     fseqFileNameSizesInit(&sizes);
