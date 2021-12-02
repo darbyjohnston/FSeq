@@ -727,7 +727,11 @@ struct FSeqDirEntry* fseqDirList(
         FSeqBool                 filter      = FSEQ_FALSE;
 
         fseqFileNameSizesInit(&sizes);
-        fileNameLen = fseqFileNameParseSizes(de->d_name, &sizes, FSEQ_STRING_LEN);
+        fileNameLen = fseqFileNameParseSizes(
+            de->d_name,
+            &sizes,
+            FSEQ_STRING_LEN,
+            &options->fileNameOptions);
 
         // Filter the entry.
         if (!options->dotAndDotDotDirs && _IS_DOT_DIR(de->d_name, fileNameLen))
