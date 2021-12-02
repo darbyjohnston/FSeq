@@ -78,17 +78,16 @@ void fseqFileNameDel(struct FSeqFileName*);
 // * max - The maximum length of the file name
 // * options - The options or NULL
 void fseqFileNameSplit(
-    const char*                 fileName,
-    struct FSeqFileName*        out,
-    size_t                      max,
-    struct FSeqFileNameOptions* options);
+    const char*                       fileName,
+    struct FSeqFileName*              out,
+    size_t                            max,
+    const struct FSeqFileNameOptions* options);
 
 // Split a file name into components.
 // Args:
 // * fileName - The file name to be parsed
 // * sizes - The sizes
 // * out - The output file name components
-// * options - The options or NULL
 // Returns:
 // * Whether the file name was successfully split
 FSeqBool fseqFileNameSplit2(
