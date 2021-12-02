@@ -97,7 +97,7 @@ void test1()
         fseqFileNameParseSizes(testData[i][0], &sizes, FSEQ_STRING_LEN, NULL);
 
         fseqFileNameInit(&fileName);
-        fseqFileNameSplit2(testData[i][0], &sizes, &fileName, NULL);
+        fseqFileNameSplit2(testData[i][0], &sizes, &fileName);
 
         printf("\"%s\": \"%s\" \"%s\" \"%s\" \"%s\"\n",
             testData[i][0],
@@ -397,7 +397,7 @@ void test12()
 
 void test13()
 {
-    const size_t count = 65536;
+    const int count = 65536;
     struct FSeqDirEntry* entry = NULL;
     struct FSeqDirOptions options;
     char buf[FSEQ_STRING_LEN];
@@ -409,7 +409,7 @@ void test13()
     options.sequence = FSEQ_TRUE;
     fseqMkdir("tests");
     fseqMkdir("tests/test12");
-    for (size_t i = 0; i < count; ++i)
+    for (int i = 0; i < count; ++i)
     {
         snprintf(buf2, FSEQ_STRING_LEN, "tests/test12/large.%08d.exr", i);
         fseqTouch(buf2);

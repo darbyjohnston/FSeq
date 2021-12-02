@@ -50,10 +50,10 @@ void fseqFileNameSizesInit(struct FSeqFileNameSizes*);
 // Returns:
 // * The length of the file name
 unsigned short fseqFileNameParseSizes(
-    const char*                 fileName,
-    struct FSeqFileNameSizes*   out,
-    size_t                      max,
-    struct FSeqFileNameOptions* options);
+    const char*                       fileName,
+    struct FSeqFileNameSizes*         out,
+    size_t                            max,
+    const struct FSeqFileNameOptions* options);
 
 // Compare structs.
 FSeqBool fseqFileNameSizesCompare(

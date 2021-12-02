@@ -54,10 +54,10 @@ void fseqFileNameSizesInit(struct FSeqFileNameSizes* value)
      '9' == V)
 
 unsigned short fseqFileNameParseSizes(
-    const char*                 in,
-    struct FSeqFileNameSizes*   out,
-    size_t                      max,
-    struct FSeqFileNameOptions* options)
+    const char*                       in,
+    struct FSeqFileNameSizes*         out,
+    size_t                            max,
+    const struct FSeqFileNameOptions* options)
 {
     unsigned short len               = 0;
     int            lastPathSeparator = -1;
@@ -181,7 +181,7 @@ void fseqFileNameSplit(
     struct FSeqFileNameSizes sizes;
     fseqFileNameSizesInit(&sizes);
     fseqFileNameParseSizes(fileName, &sizes, max, options);
-    fseqFileNameSplit2(fileName, &sizes, out, options);
+    fseqFileNameSplit2(fileName, &sizes, out);
 }
 
 FSeqBool fseqFileNameSplit2(
@@ -829,8 +829,7 @@ struct FSeqDirEntry* fseqDirList(
             if (!fseqFileNameSplit2(
                 _entry->fileName,
                 &_entry->sizes,
-                &out->fileName,
-                &options->fileNameOptions))
+                &out->fileName))
             {
                 _fseqSetError(error);
                 break;
@@ -852,8 +851,7 @@ struct FSeqDirEntry* fseqDirList(
             if (!fseqFileNameSplit2(
                 _entry->fileName,
                 &_entry->sizes,
-                &entry->next->fileName,
-                &options->fileNameOptions))
+                &entry->next->fileName))
             {
                 _fseqSetError(error);
                 break;
