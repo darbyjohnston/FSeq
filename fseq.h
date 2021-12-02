@@ -24,6 +24,13 @@ typedef char FSeqBool;
 #define FSEQ_MIN(A, B) (A < B ? A : B)
 #define FSEQ_MAX(A, B) (A > B ? A : B)
 
+// This struct file name component options.
+struct FSeqFileNameOptions
+{
+    uint8_t maxNumberDigits;
+};
+void fseqFileNameOptionsInit(struct FSeqFileNameOptions*);
+
 // This struct provides file name component sizes.
 struct FSeqFileNameSizes
 {
@@ -37,14 +44,16 @@ void fseqFileNameSizesInit(struct FSeqFileNameSizes*);
 // Parse the file name component sizes.
 // Args:
 // * fileName - The file name to be parsed
-// * sizes - The parsed sizes
+// * out - The output sizes
 // * max - The maximum length of the file name
+// * options - The options or NULL
 // Returns:
 // * The length of the file name
 unsigned short fseqFileNameParseSizes(
-    const char*               fileName,
-    struct FSeqFileNameSizes* sizes,
-    size_t                    max);
+    const char*                 fileName,
+    struct FSeqFileNameSizes*   out,
+    size_t                      max,
+    struct FSeqFileNameOptions* options);
 
 // Compare structs.
 FSeqBool fseqFileNameSizesCompare(
@@ -63,13 +72,29 @@ void fseqFileNameInit(struct FSeqFileName*);
 void fseqFileNameDel(struct FSeqFileName*);
 
 // Split a file name into components.
-void fseqFileNameSplit(const char*, struct FSeqFileName*, size_t max);
+// Args:
+// * fileName - The file name to be parsed
+// * out - The output file name components
+// * max - The maximum length of the file name
+// * options - The options or NULL
+void fseqFileNameSplit(
+    const char*                 fileName,
+    struct FSeqFileName*        out,
+    size_t                      max,
+    struct FSeqFileNameOptions* options);
 
 // Split a file name into components.
+// Args:
+// * fileName - The file name to be parsed
+// * sizes - The sizes
+// * out - The output file name components
+// * options - The options or NULL
+// Returns:
+// * Whether the file name was successfully split
 FSeqBool fseqFileNameSplit2(
-    const char*,
-    const struct FSeqFileNameSizes*,
-    struct FSeqFileName*);
+    const char*                     fileName,
+    const struct FSeqFileNameSizes* sizes,
+    struct FSeqFileName*            out);
 
 // Test whether two file names are part of the same sequence (all components
 // are equal except for the number).
@@ -106,9 +131,10 @@ void fseqDirEntryToString(
 // This struct provides directory listing options.
 struct FSeqDirOptions
 {
-    FSeqBool dotAndDotDotDirs;
-    FSeqBool dotFiles;
-    FSeqBool sequence;
+    FSeqBool                   dotAndDotDotDirs;
+    FSeqBool                   dotFiles;
+    FSeqBool                   sequence;
+    struct FSeqFileNameOptions fileNameOptions;
 };
 void fseqDirOptionsInit(struct FSeqDirOptions*);
 

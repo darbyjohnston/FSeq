@@ -23,6 +23,11 @@
 #include <dirent.h>
 #endif
 
+void fseqFileNameOptionsInit(struct FSeqFileNameOptions* value)
+{
+    value->maxNumberDigits = 9;
+}
+
 void fseqFileNameSizesInit(struct FSeqFileNameSizes* value)
 {
     value->path      = 0;
@@ -49,9 +54,10 @@ void fseqFileNameSizesInit(struct FSeqFileNameSizes* value)
      '9' == V)
 
 unsigned short fseqFileNameParseSizes(
-    const char*               in,
-    struct FSeqFileNameSizes* out,
-    size_t                    max)
+    const char*                 in,
+    struct FSeqFileNameSizes*   out,
+    size_t                      max,
+    struct FSeqFileNameOptions* options)
 {
     unsigned short len               = 0;
     int            lastPathSeparator = -1;
@@ -59,6 +65,7 @@ unsigned short fseqFileNameParseSizes(
     int            start             = 0;
     int            end               = 0;
     const char*    p                 = in;
+    size_t         digits            = 0;
 
     // Iterate over the characters to find the last path separator,
     // the last dot, and the end of the string.
@@ -98,22 +105,31 @@ unsigned short fseqFileNameParseSizes(
             while (p > in && _IS_NUMBER(*(p - 1)))
             {
                 --p;
+                ++digits;
             }
             if (p > in && '-' == *(p - 1))
             {
                 --p;
+                ++digits;
             }
-            out->number = (unsigned short)(end - (p - in) + 1);
-            end = (int)(p - in - 1);
+            if (options ? digits < options->maxNumberDigits : FSEQ_TRUE)
+            {
+                out->number = (unsigned short)(end - (p - in) + 1);
+                end = (int)(p - in - 1);
+            }
         }
         else if ('#' == *p)
         {
             while (p > in && '#' == *(p - 1))
             {
                 --p;
+                ++digits;
             }
-            out->number = (unsigned short)(end - (p - in) + 1);
-            end = (int)(p - in - 1);
+            if (options ? digits < options->maxNumberDigits : FSEQ_TRUE)
+            {
+                out->number = (unsigned short)(end - (p - in) + 1);
+                end = (int)(p - in - 1);
+            }
         }
 
         // Whatever is leftover is the base.
@@ -156,25 +172,29 @@ void fseqFileNameDel(struct FSeqFileName* value)
     value->extension = NULL;
 }
 
-void fseqFileNameSplit(const char* value, struct FSeqFileName* out, size_t max)
+void fseqFileNameSplit(
+    const char* fileName,
+    struct FSeqFileName* out,
+    size_t max,
+    struct FSeqFileNameOptions* options)
 {
     struct FSeqFileNameSizes sizes;
     fseqFileNameSizesInit(&sizes);
-    fseqFileNameParseSizes(value, &sizes, max);
-    fseqFileNameSplit2(value, &sizes, out);
+    fseqFileNameParseSizes(fileName, &sizes, max, options);
+    fseqFileNameSplit2(fileName, &sizes, out, options);
 }
 
 FSeqBool fseqFileNameSplit2(
-    const char*                     value,
+    const char* fileName,
     const struct FSeqFileNameSizes* sizes,
-    struct FSeqFileName*            out)
+    struct FSeqFileName* out)
 {
     out->path = (char*)malloc((size_t)sizes->path + 1);
     if (!out->path)
     {
         return FSEQ_FALSE;
     }
-    memcpy(out->path, value, sizes->path);
+    memcpy(out->path, fileName, sizes->path);
     out->path[sizes->path] = 0;
 
     out->base = (char*)malloc((size_t)sizes->base + 1);
@@ -182,7 +202,7 @@ FSeqBool fseqFileNameSplit2(
     {
         return FSEQ_FALSE;
     }
-    memcpy(out->base, value + sizes->path, sizes->base);
+    memcpy(out->base, fileName + sizes->path, sizes->base);
     out->base[sizes->base] = 0;
 
     out->number = (char*)malloc((size_t)sizes->number + 1);
@@ -190,7 +210,7 @@ FSeqBool fseqFileNameSplit2(
     {
         return FSEQ_FALSE;
     }
-    memcpy(out->number, value + sizes->path + sizes->base, sizes->number);
+    memcpy(out->number, fileName + sizes->path + sizes->base, sizes->number);
     out->number[sizes->number] = 0;
 
     out->extension = (char*)malloc((size_t)sizes->extension + 1);
@@ -198,7 +218,7 @@ FSeqBool fseqFileNameSplit2(
     {
         return FSEQ_FALSE;
     }
-    memcpy(out->extension, value + sizes->path + sizes->base + sizes->number, sizes->extension);
+    memcpy(out->extension, fileName + sizes->path + sizes->base + sizes->number, sizes->extension);
     out->extension[sizes->extension] = 0;
 
     return FSEQ_TRUE;
@@ -243,6 +263,7 @@ void fseqDirOptionsInit(struct FSeqDirOptions* value)
     value->dotAndDotDotDirs = FSEQ_FALSE;
     value->dotFiles         = FSEQ_FALSE;
     value->sequence         = FSEQ_TRUE;
+    fseqFileNameOptionsInit(&value->fileNameOptions);
 }
 
 void fseqDirEntryToString(
@@ -570,12 +591,32 @@ struct FSeqDirEntry* fseqDirList(
         unsigned short           fileNameLen       = 0;
         FSeqBool                 filter            = FSEQ_FALSE;
 
-        fileNameByteCount = WideCharToMultiByte(CP_UTF8, 0, ffd.cFileName, -1, NULL, 0, NULL, NULL);
+        fileNameByteCount = WideCharToMultiByte(
+            CP_UTF8,
+            0,
+            ffd.cFileName,
+            -1,
+            NULL,
+            0,
+            NULL,
+            NULL);
         fileNameBuf = malloc(fileNameByteCount);
-        WideCharToMultiByte(CP_UTF8, 0, ffd.cFileName, -1, fileNameBuf, fileNameByteCount, NULL, NULL);
+        WideCharToMultiByte(
+            CP_UTF8,
+            0,
+            ffd.cFileName,
+            -1,
+            fileNameBuf,
+            fileNameByteCount,
+            NULL,
+            NULL);
 
         fseqFileNameSizesInit(&sizes);
-        fileNameLen = fseqFileNameParseSizes(fileNameBuf, &sizes, FSEQ_STRING_LEN);
+        fileNameLen = fseqFileNameParseSizes(
+            fileNameBuf,
+            &sizes,
+            FSEQ_STRING_LEN,
+            &options->fileNameOptions);
 
         // Filter the entry.
         if (!options->dotAndDotDotDirs && _IS_DOT_DIR(fileNameBuf, fileNameLen))
@@ -614,7 +655,11 @@ struct FSeqDirEntry* fseqDirList(
                     _entry = _entries;
                     while (_entry)
                     {
-                        if (fseqFileNameMatch(fileNameBuf, &sizes, _entry->fileName, &_entry->sizes))
+                        if (fseqFileNameMatch(
+                            fileNameBuf,
+                            &sizes,
+                            _entry->fileName,
+                            &_entry->sizes))
                         {
                             char buf[FSEQ_STRING_LEN];
                             int64_t number = 0;
@@ -629,7 +674,9 @@ struct FSeqDirEntry* fseqDirList(
                             _entry->frameMax = FSEQ_MAX(_entry->frameMax, number);
                             if ('0' == buf[0] && _IS_NUMBER(buf[1]))
                             {
-                                _entry->framePadding = (char)FSEQ_MIN(FSEQ_MAX((size_t)_entry->framePadding, sizes.number), 255);
+                                _entry->framePadding = (char)FSEQ_MIN(
+                                    FSEQ_MAX((size_t)_entry->framePadding, sizes.number),
+                                    255);
                             }
                             else
                             {
@@ -732,7 +779,9 @@ struct FSeqDirEntry* fseqDirList(
                             _entry->frameMax = FSEQ_MAX(_entry->frameMax, number);
                             if ('0' == buf[0] && _IS_NUMBER(buf[1]))
                             {
-                                _entry->framePadding = (char)FSEQ_MIN(FSEQ_MAX((size_t)_entry->framePadding, sizes.number), 255);
+                                _entry->framePadding = (char)FSEQ_MIN(
+                                    FSEQ_MAX((size_t)_entry->framePadding, sizes.number),
+                                    255);
                             }
                             else
                             {
@@ -777,7 +826,11 @@ struct FSeqDirEntry* fseqDirList(
                 break;
             }
             fseqDirEntryInit(out);
-            if (!fseqFileNameSplit2(_entry->fileName, &_entry->sizes, &out->fileName))
+            if (!fseqFileNameSplit2(
+                _entry->fileName,
+                &_entry->sizes,
+                &out->fileName,
+                &options->fileNameOptions))
             {
                 _fseqSetError(error);
                 break;
@@ -796,7 +849,11 @@ struct FSeqDirEntry* fseqDirList(
                 break;
             }
             fseqDirEntryInit(entry->next);
-            if (!fseqFileNameSplit2(_entry->fileName, &_entry->sizes, &entry->next->fileName))
+            if (!fseqFileNameSplit2(
+                _entry->fileName,
+                &_entry->sizes,
+                &entry->next->fileName,
+                &options->fileNameOptions))
             {
                 _fseqSetError(error);
                 break;
