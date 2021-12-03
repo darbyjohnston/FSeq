@@ -109,7 +109,7 @@ struct FSeqDirEntry
     struct FSeqFileName  fileName;
     int64_t              frameMin;
     int64_t              frameMax;
-    char                 framePadding;
+    uint8_t              framePadding;
     struct FSeqDirEntry* next;
 };
 void fseqDirEntryInit(struct FSeqDirEntry*);

@@ -463,7 +463,7 @@ struct _FSeqDirEntry
     struct FSeqFileNameSizes sizes;
     int64_t                  frameMin;
     int64_t                  frameMax;
-    char                     framePadding;
+    uint8_t                  framePadding;
     struct _FSeqDirEntry*    next;
 };
 
@@ -674,7 +674,7 @@ struct FSeqDirEntry* fseqDirList(
                             _entry->frameMax = FSEQ_MAX(_entry->frameMax, number);
                             if ('0' == buf[0] && _IS_NUMBER(buf[1]))
                             {
-                                _entry->framePadding = (char)FSEQ_MIN(
+                                _entry->framePadding = (uint8_t)FSEQ_MIN(
                                     FSEQ_MAX((size_t)_entry->framePadding, sizes.number),
                                     255);
                             }
@@ -783,7 +783,7 @@ struct FSeqDirEntry* fseqDirList(
                             _entry->frameMax = FSEQ_MAX(_entry->frameMax, number);
                             if ('0' == buf[0] && _IS_NUMBER(buf[1]))
                             {
-                                _entry->framePadding = (char)FSEQ_MIN(
+                                _entry->framePadding = (uint8_t)FSEQ_MIN(
                                     FSEQ_MAX((size_t)_entry->framePadding, sizes.number),
                                     255);
                             }
