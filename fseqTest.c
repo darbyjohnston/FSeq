@@ -83,8 +83,8 @@ void test1()
         { "/a/b/c10.ext", "/a/b/", "c", "10", ".ext" },
         { "/a/b/c100.ext", "/a/b/", "c", "100", ".ext" },
         { "/a/b/c0100.ext", "/a/b/", "c", "0100", ".ext" },
-        { "/a/b/c-0100.ext", "/a/b/", "c", "-0100", ".ext" },
-        { "C:\\a\\b\\c-0100.ext", "C:\\a\\b\\", "c", "-0100", ".ext" }
+        { "/a/b/c-0100.ext", "/a/b/", "c-", "0100", ".ext" },
+        { "C:\\a\\b\\c-0100.ext", "C:\\a\\b\\", "c-", "0100", ".ext" }
     };
     const size_t testDataSize = sizeof(testData) / sizeof(testData[0]);
     
@@ -117,34 +117,75 @@ void test1()
 
 void test2()
 {
-    const char test[FSEQ_STRING_LEN] = "9223372036854775807.ext";
+    const char negativeNumbers[FSEQ_STRING_LEN] = "render-1000.ext";
+    const char maxNumberDigits[FSEQ_STRING_LEN] = "9223372036854775807.ext";
+    const char maxNumberDigits2[FSEQ_STRING_LEN] = "9223372.ext";
     struct FSeqFileNameOptions options;
     struct FSeqFileNameSizes sizes;
     struct FSeqFileName fileName;
 
-    fseqFileNameOptionsInit(&options);
+    fseqFileNameSizesInit(&sizes);
+    fseqFileNameParseSizes(negativeNumbers, &sizes, FSEQ_STRING_LEN, NULL);
+    fseqFileNameInit(&fileName);
+    fseqFileNameSplit2(negativeNumbers, &sizes, &fileName);
+    assert(0 == memcmp(fileName.path, "", sizes.path));
+    assert(0 == memcmp(fileName.base, "render-", sizes.base));
+    assert(0 == memcmp(fileName.number, "1000", sizes.number));
+    assert(0 == memcmp(fileName.extension, ".ext", sizes.extension));
+    fseqFileNameDel(&fileName);
 
     fseqFileNameSizesInit(&sizes);
-    fseqFileNameParseSizes(test, &sizes, FSEQ_STRING_LEN, NULL);
-
+    fseqFileNameParseSizes(maxNumberDigits, &sizes, FSEQ_STRING_LEN, NULL);
     fseqFileNameInit(&fileName);
-    fseqFileNameSplit2(test, &sizes, &fileName);
-
+    fseqFileNameSplit2(maxNumberDigits, &sizes, &fileName);
     assert(0 == memcmp(fileName.path, "", sizes.path));
     assert(0 == memcmp(fileName.base, "", sizes.base));
     assert(0 == memcmp(fileName.number, "9223372036854775807", sizes.number));
     assert(0 == memcmp(fileName.extension, ".ext", sizes.extension));
+    fseqFileNameDel(&fileName);
 
     fseqFileNameSizesInit(&sizes);
-    fseqFileNameParseSizes(test, &sizes, FSEQ_STRING_LEN, &options);
-
+    fseqFileNameOptionsInit(&options);
+    fseqFileNameParseSizes(negativeNumbers, &sizes, FSEQ_STRING_LEN, &options);
     fseqFileNameInit(&fileName);
-    fseqFileNameSplit2(test, &sizes, &fileName);
+    fseqFileNameSplit2(negativeNumbers, &sizes, &fileName);
+    assert(0 == memcmp(fileName.path, "", sizes.path));
+    assert(0 == memcmp(fileName.base, "render-", sizes.base));
+    assert(0 == memcmp(fileName.number, "1000", sizes.number));
+    assert(0 == memcmp(fileName.extension, ".ext", sizes.extension));
+    fseqFileNameDel(&fileName);
 
+    options.negativeNumbers = FSEQ_TRUE;
+    fseqFileNameSizesInit(&sizes);
+    fseqFileNameParseSizes(negativeNumbers, &sizes, FSEQ_STRING_LEN, &options);
+    fseqFileNameInit(&fileName);
+    fseqFileNameSplit2(negativeNumbers, &sizes, &fileName);
+    assert(0 == memcmp(fileName.path, "", sizes.path));
+    assert(0 == memcmp(fileName.base, "render", sizes.base));
+    assert(0 == memcmp(fileName.number, "-1000", sizes.number));
+    assert(0 == memcmp(fileName.extension, ".ext", sizes.extension));
+    fseqFileNameDel(&fileName);
+
+    fseqFileNameSizesInit(&sizes);
+    fseqFileNameParseSizes(maxNumberDigits, &sizes, FSEQ_STRING_LEN, &options);
+    fseqFileNameInit(&fileName);
+    fseqFileNameSplit2(maxNumberDigits, &sizes, &fileName);
     assert(0 == memcmp(fileName.path, "", sizes.path));
     assert(0 == memcmp(fileName.base, "9223372036854775807", sizes.base));
     assert(0 == memcmp(fileName.number, "", sizes.number));
     assert(0 == memcmp(fileName.extension, ".ext", sizes.extension));
+    fseqFileNameDel(&fileName);
+
+    options.maxNumberDigits = 6;
+    fseqFileNameSizesInit(&sizes);
+    fseqFileNameParseSizes(maxNumberDigits2, &sizes, FSEQ_STRING_LEN, &options);
+    fseqFileNameInit(&fileName);
+    fseqFileNameSplit2(maxNumberDigits2, &sizes, &fileName);
+    assert(0 == memcmp(fileName.path, "", sizes.path));
+    assert(0 == memcmp(fileName.base, "9223372", sizes.base));
+    assert(0 == memcmp(fileName.number, "", sizes.number));
+    assert(0 == memcmp(fileName.extension, ".ext", sizes.extension));
+    fseqFileNameDel(&fileName);
 }
 
 void test3()

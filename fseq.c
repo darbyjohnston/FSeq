@@ -25,6 +25,7 @@
 
 void fseqFileNameOptionsInit(struct FSeqFileNameOptions* value)
 {
+    value->negativeNumbers = FSEQ_FALSE;
     value->maxNumberDigits = 9;
 }
 
@@ -107,7 +108,8 @@ unsigned short fseqFileNameParseSizes(
                 --p;
                 ++digits;
             }
-            if (p > in && '-' == *(p - 1))
+            if (options && FSEQ_TRUE == options->negativeNumbers &&
+                p > in && '-' == *(p - 1))
             {
                 --p;
                 ++digits;

@@ -27,7 +27,8 @@ typedef char FSeqBool;
 // This struct file name component options.
 struct FSeqFileNameOptions
 {
-    uint8_t maxNumberDigits;
+    FSeqBool negativeNumbers;
+    uint8_t  maxNumberDigits;
 };
 void fseqFileNameOptionsInit(struct FSeqFileNameOptions*);
 
